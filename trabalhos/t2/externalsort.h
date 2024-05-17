@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "heap.h"
 
@@ -98,6 +99,9 @@ void merge_runs(FILE **runs, char *output_filename, int run_count, int element_c
         merged_step = 1;
     }
 
+    clock_t start = clock();
+    clock_t end = clock();
+
     while (!is_heap_empty(&heap))
     {
         Element root = *(Element *)peek_heap(&heap);
@@ -120,6 +124,10 @@ void merge_runs(FILE **runs, char *output_filename, int run_count, int element_c
             fprintf(stderr, "DEBUG: %d elements merged (%.1lf%%).\n", merged_count, merged_count * 100.0 / element_count);
         }
     }
+
+    float seconds = (float)(end - start) / CLOCKS_PER_SEC;
+
+    fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, seconds);
 
     free_heap(&heap);
     fclose(output);
