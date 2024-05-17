@@ -6,11 +6,20 @@
 #include "heap.h"
 
 typedef struct element Element;
+typedef struct run Run;
+
 typedef void (*SortFunction)(int *, int);
+
+char *TMP_DIR = "tmp";
+
+struct run
+{
+    char filename[256];
+};
 
 struct element {
     int value;
-    FILE *run;
+    FILE *file;
 };
 
 bool compare_run_element(void *a, void *b)
@@ -21,17 +30,17 @@ bool compare_run_element(void *a, void *b)
     return element_a->value > element_b->value;
 }
 
-bool take_run_element_out(FILE *run, Element *out)
+bool take_run_element_out(FILE *file, Element *out)
 {
-    out->run = run;
-    return fscanf(run, "%d\n", &out->value) == 1;
+    out->file = file;
+    return fscanf(file, "%d\n", &out->value) == 1;
 }
 
-int create_runs(FILE **runs, char *input_filename, int run_count, int run_size, SortFunction sort)
+int create_runs(Run *runs, char *input_filename, int run_count, int run_size, SortFunction sort)
 {
     fprintf(stderr, "DEBUG: creating runs...\n");
 
-    FILE *input = fopen(input_filename, "r");
+    FILE *input_file = fopen(input_filename, "r");
 
     int *array = (int*)malloc(run_size * sizeof(int));
     int element_count = 0;
@@ -40,11 +49,12 @@ int create_runs(FILE **runs, char *input_filename, int run_count, int run_size, 
     {
         int n = 0;
 
+        sprintf(runs[i].filename, "%s/%06d.tmp", TMP_DIR, i);
+        FILE *run_file = fopen(runs[i].filename, "w");
+
         fprintf(stderr, "DEBUG: sorting run %d...\n", i);
 
-        runs[i] = tmpfile();
-
-        while (n < run_size && fscanf(input, "%d", &array[n]) == 1)
+        while (n < run_size && fscanf(input_file, "%d", &array[n]) == 1)
         {
             n++;
         }
@@ -53,10 +63,12 @@ int create_runs(FILE **runs, char *input_filename, int run_count, int run_size, 
 
         for (int j = 0; j < n; j++)
         {
-            fprintf(runs[i], "%d\n", array[j]);
+            fprintf(run_file, "%d\n", array[j]);
         }
 
         element_count += n;
+
+        fclose(run_file);
 
         if (n < run_size)
         {
@@ -71,11 +83,13 @@ int create_runs(FILE **runs, char *input_filename, int run_count, int run_size, 
     return element_count;
 }
 
-void merge_runs(FILE **runs, char *output_filename, int run_count, int element_count)
+void merge_runs(Run *runs, char *output_filename, int run_count, int element_count)
 {
     fprintf(stderr, "DEBUG: merging runs...\n");
 
-    FILE *output = fopen(output_filename, "w");
+    FILE *output_file = fopen(output_filename, "w");
+    FILE *run_files[run_count];
+
     Heap heap = create_heap(run_count, sizeof(Element), compare_run_element);
 
     fprintf(stderr, "DEBUG: creating initial nodes in heap...\n");
@@ -83,9 +97,9 @@ void merge_runs(FILE **runs, char *output_filename, int run_count, int element_c
     {
         Element element;
 
-        rewind(runs[i]);
+        run_files[i] = fopen(runs[i].filename, "r");
 
-        if (take_run_element_out(runs[i], &element))
+        if (take_run_element_out(run_files[i], &element))
         {
             push_heap(&heap, &element);
         }
@@ -106,9 +120,9 @@ void merge_runs(FILE **runs, char *output_filename, int run_count, int element_c
     {
         Element root = *(Element *)peek_heap(&heap);
 
-        fprintf(output, "%d\n", root.value);
+        fprintf(output_file, "%d\n", root.value);
 
-        if (take_run_element_out(root.run, &root))
+        if (take_run_element_out(root.file, &root))
         {
             replace_heap(&heap, &root);
         }
@@ -130,23 +144,28 @@ void merge_runs(FILE **runs, char *output_filename, int run_count, int element_c
     fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, seconds);
 
     free_heap(&heap);
-    fclose(output);
+
+    for (int i = 0; i < run_count; i++)
+    {
+        fclose(run_files[i]);
+    }
+
+    fclose(output_file);
 }
 
-void clear_runs(FILE **runs, int run_count)
+void clear_runs(Run *runs, int run_count)
 {
     fprintf(stderr, "DEBUG: clearing runs...\n");
 
     for (int i = 0; i < run_count; i++)
     {
-        fclose(runs[i]);
+        remove(runs[i].filename);
     }
 }
 
 void sort_files(char *input_filename, char *output_filename, int run_count, int run_size, SortFunction sort)
 {
-    FILE *output = fopen(output_filename, "w");
-    FILE *runs[run_count];
+    Run runs[run_count];
 
     int element_count = create_runs(runs, input_filename, run_count, run_size, sort);
 
