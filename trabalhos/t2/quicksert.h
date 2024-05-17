@@ -1,13 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-void swap(int *a, int *b)
-{
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
 int partition(int *array, int low, int high)
 {
     int pivot = array[(low + high) / 2];
@@ -32,7 +25,10 @@ int partition(int *array, int low, int high)
             return j;
         }
 
-        swap(&array[i], &array[j]);
+        int temporary = array[i];
+
+        array[i] = array[j];
+        array[j] = temporary;
     }
 }
 
@@ -53,10 +49,16 @@ void insertionsort(int *array, int low, int high)
 {
     for (int i = low + 1; i <= high; i++)
     {
-        for (int j = i; j > 0 && array[j - 1] > array[j]; j--)
+        int j = i;
+        int temporary = array[i];
+
+        while (j > low && array[j - 1] > temporary)
         {
-            swap(&array[j - 1], &array[j]);
+            array[j] = array[j - 1];
+            j--;
         }
+
+        array[j] = temporary;
     }
 }
 
