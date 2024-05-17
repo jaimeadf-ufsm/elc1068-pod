@@ -4,155 +4,122 @@
 #include <time.h>
 
 #include "quicksert.h"
+#include "input.h"
+#include "stats.h"
 
-#define MODULO 1000
-
-#define TEST_COUNT sizeof(TESTS) / sizeof(int)
-#define TEST_MAX 10000000
-
-#define THRESHOLD_MIN 2
-#define THRESHOLD_MAX 999
-
-typedef struct record Record;
-
-struct record
+int *generate_datasets(int number_count, int sample_count)
 {
-    int test;
-    int threshold;
+    int *datasets = (int *)malloc(sample_count * number_count * sizeof(int));
 
-    clock_t quicksort_time;
-    clock_t quicksert_time;
-};
-
-const int TESTS[] = {
-    10,
-    100,
-    1000,
-    10000,
-    100000,
-    200000,
-    300000,
-    400000,
-    500000,
-    1000000,
-    2000000,
-    3000000,
-    4000000,
-    5000000,
-    6000000,
-    7000000,
-    8000000,
-    9000000,
-    10000000
-};
-
-int random_array[TEST_MAX];
-int test_array[TEST_MAX];
-
-Record records[TEST_COUNT];
-
-void fill_random_array()
-{
-    srand(0);
-
-    for (int i = 0; i < TEST_MAX; i++)
+    for (int i = 0; i < sample_count; i++)
     {
-        random_array[i] = rand() % MODULO;
-    }
-}
-
-void fill_test_array(int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        test_array[i] = random_array[i];
-    }
-}
-
-clock_t measure_quicksort(int n)
-{
-    fill_test_array(n);
-
-    clock_t start = clock();
-    quicksort(test_array, 0, n - 1);
-    clock_t end = clock();
-
-    return end - start;
-}
-
-clock_t measure_quicksert(int n, int threshold)
-{
-    fill_test_array(n);
-
-    clock_t start = clock();
-    quicksert(test_array, 0, n - 1, threshold);
-    clock_t end = clock();
-
-    return end - start;
-}
-
-double calculate_variance_percentage(clock_t a, clock_t b)
-{
-    if (b == 0)
-    {
-        return 0.0;
-    }
-
-    return (a - b) * 100.0 / b;
-}
-
-
-int main()
-{
-    fill_random_array();
-
-    printf("Running quicksort benchmarks...\n");
-
-    for (int i = 0; i < TEST_COUNT; i++)
-    {
-        records[i].test = TESTS[i];
-        records[i].quicksort_time = measure_quicksort(TESTS[i]);
-        records[i].quicksert_time = LONG_MAX;
-
-        printf("N: %8d, Quicksort: %ld\n", TESTS[i], records[i].quicksort_time);
-    }
-
-    printf("\nRunning quicksert benchmarks...\n");
-
-    for (int threshold = THRESHOLD_MIN; threshold <= THRESHOLD_MAX; threshold++)
-    {
-        for (int i = 0; i < TEST_COUNT; i++)
+        for (int j = 0; j < number_count; j++)
         {
-            clock_t quicksert_time = measure_quicksert(TESTS[i], threshold);
-
-            printf(
-                "N: %8d, Quicksert(%3d): %ld (%lf%%)\n",
-                TESTS[i], threshold,
-                quicksert_time,
-                calculate_variance_percentage(quicksert_time, records[i].quicksort_time)
-            );
-
-            if (quicksert_time < records[i].quicksert_time)
-            {
-                records[i].threshold = threshold;
-                records[i].quicksert_time = quicksert_time;
-            }
+            datasets[i * number_count + j] = rand();
         }
     }
 
-    printf("\n\nResults:\n");
+    return datasets;
+}
 
-    for (int i = 0; i < TEST_COUNT; i++)
+void copy_dataset(int *target, int *datasets, int number_count, int sample_index)
+{
+    for (int i = 0; i < number_count; i++)
     {
-        printf(
-            "N: %8d, Quicksort: %ld, Quicksert(%3d): %ld (%lf%%)\n",
-            records[i].test,
-            records[i].quicksort_time,
-            records[i].threshold,
-            records[i].quicksert_time,
-            calculate_variance_percentage(records[i].quicksort_time, records[i].quicksert_time)
+        target[i] = datasets[sample_index * number_count + i];
+    }
+}
+
+
+clock_t measure_quicksort(int *dataset, int n)
+{
+    clock_t start = clock();
+    quicksort(dataset, 0, n - 1);
+    clock_t end = clock();
+
+    return MAX(end - start, 1);
+}
+
+clock_t measure_quicksert(int *dataset, int n, int threshold)
+{
+    clock_t start = clock();
+    quicksert(dataset, 0, n - 1, threshold);
+    clock_t end = clock();
+
+    return MAX(end - start, 1);
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc < 3)
+    {
+        fprintf(stderr, "Usage: %s <numbers_count> <samples_count> <threshold_min> <threshold_max>\n", argv[0]);
+        exit(1);
+    }
+
+    int number_count = parse_int_or_exit(argv[1]);
+    int sample_count = parse_int_or_exit(argv[2]);
+    int threshold_min = parse_int_or_exit(argv[3]);
+    int threshold_max = parse_int_or_exit(argv[4]);
+
+    fprintf(stderr, "N: %d, Samples: %d, Threshold: [%d, %d]\n", number_count, sample_count, threshold_min, threshold_max);
+
+    double *quicksort_samples = malloc(sample_count * sizeof(double));
+    double *quicksert_samples = malloc(sample_count * sizeof(double));
+
+    int *datasets = generate_datasets(number_count, sample_count);
+    int *test = (int *)malloc(number_count * sizeof(int));
+
+    for (int i = 0; i < sample_count; i++)
+    {
+        copy_dataset(test, datasets, number_count, i);
+        quicksort_samples[i] = measure_quicksort(test, number_count);
+    }
+
+    Stats quicksort_stats = compute_stats(quicksort_samples, sample_count);
+
+    fprintf(
+        stderr,
+        "Quicksort: Min: %.2lf, Max: %.2lf, Avg: %.2lf, Median: %.2lf, Stddev: %.2lf\n",
+        quicksort_stats.minimum,
+        quicksort_stats.maximum,
+        quicksort_stats.average,
+        quicksort_stats.median,
+        quicksort_stats.standard_deviation
+    );
+
+    srand(time(NULL));
+    
+    for (int threshold = threshold_min; threshold <= threshold_max; threshold++)
+    {
+        for (int i = 0; i < sample_count; i++)
+        {
+            copy_dataset(test, datasets, number_count, i);
+            quicksert_samples[i] = measure_quicksert(test, number_count, threshold);
+        }
+
+        Stats quicksert_stats = compute_stats(quicksert_samples, sample_count);
+    
+        fprintf(
+            stderr,
+            "Quicksert (%d): Min: %.2lf (%.2lf%%), Max: %.2lf (%.2lf%%), Avg: %.2lf (%.2lf%%), Median: %.2lf, Stddev: %.2lf\n",
+            threshold,
+            quicksert_stats.minimum,
+            compute_percentange_change(quicksert_stats.minimum, quicksort_stats.minimum),
+            quicksert_stats.maximum,
+            compute_percentange_change(quicksert_stats.maximum, quicksort_stats.maximum),
+            quicksert_stats.average,
+            compute_percentange_change(quicksert_stats.average, quicksort_stats.average),
+            quicksert_stats.median,
+            quicksert_stats.standard_deviation
         );
     }
+
+    free(quicksort_samples);
+    free(quicksert_samples);
+
+    free(datasets);
+    free(test);
 
     return 0;
 }
