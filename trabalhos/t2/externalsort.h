@@ -114,7 +114,6 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     }
 
     clock_t start = clock();
-    clock_t end = clock();
 
     while (!is_heap_empty(&heap))
     {
@@ -139,6 +138,7 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
         }
     }
 
+    clock_t end = clock();
     float seconds = (float)(end - start) / CLOCKS_PER_SEC;
 
     fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, seconds);
