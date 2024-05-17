@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "quicksert.h"
+#include "highprecisiontimer.h"
 #include "input.h"
 #include "stats.h"
 
@@ -31,22 +32,22 @@ void copy_dataset(int *target, int *datasets, int number_count, int sample_index
 }
 
 
-clock_t measure_quicksort(int *dataset, int n)
+double measure_quicksort(int *dataset, int n)
 {
-    clock_t start = clock();
+    Timer timer = start_timer();
     quicksort(dataset, 0, n - 1);
-    clock_t end = clock();
+    stop_timer(&timer);
 
-    return MAX(end - start, 1);
+    return get_timer_nanoseconds(&timer) / 1e6; 
 }
 
 clock_t measure_quicksert(int *dataset, int n, int threshold)
 {
-    clock_t start = clock();
+    Timer timer = start_timer();
     quicksert(dataset, 0, n - 1, threshold);
-    clock_t end = clock();
+    stop_timer(&timer);
 
-    return MAX(end - start, 1);
+    return get_timer_nanoseconds(&timer) / 1e6;
 }
 
 int main(int argc, char *argv[])
