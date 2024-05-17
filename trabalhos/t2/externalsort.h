@@ -33,7 +33,7 @@ bool compare_run_element(void *a, void *b)
 bool take_run_element_out(FILE *file, Element *out)
 {
     out->file = file;
-    return fscanf(file, "%d\n", &out->value) == 1;
+    return fread(&out->value, sizeof(int), 1, file) == 1;
 }
 
 int create_runs(Run *runs, char *input_filename, int run_count, int run_size, SortFunction sort)
@@ -50,7 +50,7 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
         int n = 0;
 
         sprintf(runs[i].filename, "%s/%06d.tmp", TMP_DIR, i);
-        FILE *run_file = fopen(runs[i].filename, "w");
+        FILE *run_file = fopen(runs[i].filename, "wb");
 
         fprintf(stderr, "DEBUG: sorting run %d...\n", i);
 
@@ -61,14 +61,10 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
 
         sort(array, n);
 
-        for (int j = 0; j < n; j++)
-        {
-            fprintf(run_file, "%d\n", array[j]);
-        }
+        fwrite(array, sizeof(int), n, run_file);
+        fclose(run_file);
 
         element_count += n;
-
-        fclose(run_file);
 
         if (n < run_size)
         {
@@ -97,7 +93,7 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     {
         Element element;
 
-        run_files[i] = fopen(runs[i].filename, "r");
+        run_files[i] = fopen(runs[i].filename, "rb");
 
         if (take_run_element_out(run_files[i], &element))
         {
