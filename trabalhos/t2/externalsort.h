@@ -52,14 +52,20 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
         sprintf(runs[i].filename, "%s/%06d.tmp", TMP_DIR, i);
         FILE *run_file = fopen(runs[i].filename, "wb");
 
-        fprintf(stderr, "DEBUG: sorting run %d...\n", i);
 
         while (n < run_size && fscanf(input_file, "%d", &array[n]) == 1)
         {
             n++;
         }
 
+        clock_t start = clock();
+
         sort(array, n);
+
+        clock_t end = clock();
+        float seconds = (float)(end - start) / CLOCKS_PER_SEC;
+
+        fprintf(stderr, "DEBUG: %d elements of run %d sorted in %.2fs.\n", n, i, seconds);
 
         fwrite(array, sizeof(int), n, run_file);
         fclose(run_file);
