@@ -41,7 +41,7 @@ double measure_quicksort(int *dataset, int n)
     return get_timer_nanoseconds(&timer) / 1e6; 
 }
 
-clock_t measure_quicksert(int *dataset, int n, int threshold)
+double measure_quicksert(int *dataset, int n, int threshold)
 {
     Timer timer = start_timer();
     quicksert(dataset, 0, n - 1, threshold);

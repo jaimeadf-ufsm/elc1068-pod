@@ -41,14 +41,14 @@ typedef struct timer Timer;
     Timer start_timer()
     {
         Timer timer;
-        clock_gettime(CLOCK_MONOTONIC, &timer.start);
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer.start);
 
         return timer;
     }
 
     void stop_timer(Timer *timer)
     {
-        clock_gettime(CLOCK_MONOTONIC, &timer->end);
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer->end);
     }
 
     double get_timer_nanoseconds(Timer *timer)
