@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <time.h>
 
 #include "quicksert.h"
 #include "highprecisiontimer.h"
@@ -54,7 +53,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        fprintf(stderr, "Usage: %s <numbers_count> <samples_count> <threshold_min> <threshold_max>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <numbers_count> <samples_count> <threshold_min> <threshold_max> [seed]\n", argv[0]);
         exit(1);
     }
 
@@ -62,22 +61,29 @@ int main(int argc, char *argv[])
     int sample_count = parse_int_or_exit(argv[2]);
     int threshold_min = parse_int_or_exit(argv[3]);
     int threshold_max = parse_int_or_exit(argv[4]);
+    int seed = 0;
 
-    fprintf(stderr, "N: %d, Samples: %d, Threshold: [%d, %d]\n", number_count, sample_count, threshold_min, threshold_max);
+    if (argc > 5)
+    {
+        seed = parse_int_or_exit(argv[5]);
+    }
 
-    double *quicksort_samples = malloc(sample_count * sizeof(double));
-    double *quicksert_samples = malloc(sample_count * sizeof(double));
+    fprintf(stderr, "N: %d, Samples: %d, Threshold: [%d, %d], Seed: %d\n", number_count, sample_count, threshold_min, threshold_max, seed);
+
+    double *samples = malloc(sample_count * sizeof(double));
 
     int *datasets = generate_datasets(number_count, sample_count);
     int *test = (int *)malloc(number_count * sizeof(int));
 
+    srand(seed);
+
     for (int i = 0; i < sample_count; i++)
     {
         copy_dataset(test, datasets, number_count, i);
-        quicksort_samples[i] = measure_quicksort(test, number_count);
+        samples[i] = measure_quicksort(test, number_count);
     }
 
-    Stats quicksort_stats = compute_stats(quicksort_samples, sample_count);
+    Stats quicksort_stats = compute_stats(samples, sample_count);
 
     fprintf(
         stderr,
@@ -89,35 +95,31 @@ int main(int argc, char *argv[])
         quicksort_stats.standard_deviation
     );
 
-    srand(time(NULL));
-    
     for (int threshold = threshold_min; threshold <= threshold_max; threshold++)
     {
         for (int i = 0; i < sample_count; i++)
         {
             copy_dataset(test, datasets, number_count, i);
-            quicksert_samples[i] = measure_quicksert(test, number_count, threshold);
+            samples[i] = measure_quicksert(test, number_count, threshold);
         }
 
-        Stats quicksert_stats = compute_stats(quicksert_samples, sample_count);
+        Stats quicksert_stats = compute_stats(samples, sample_count);
     
         fprintf(
             stderr,
-            "Quicksert (%d): Min: %.2lf (%.2lf%%), Max: %.2lf (%.2lf%%), Avg: %.2lf (%.2lf%%), Median: %.2lf, Stddev: %.2lf\n",
+            "Quicksert (%d): Min: %.2lf, Max: %.2lf, Avg: %.2lf (%.2lf%%), Median: %.2lf (%.2lf%%), Stddev: %.2lf\n",
             threshold,
             quicksert_stats.minimum,
-            compute_percentange_change(quicksert_stats.minimum, quicksort_stats.minimum),
             quicksert_stats.maximum,
-            compute_percentange_change(quicksert_stats.maximum, quicksort_stats.maximum),
             quicksert_stats.average,
             compute_percentange_change(quicksert_stats.average, quicksort_stats.average),
             quicksert_stats.median,
+            compute_percentange_change(quicksert_stats.median, quicksort_stats.median),
             quicksert_stats.standard_deviation
         );
     }
 
-    free(quicksort_samples);
-    free(quicksert_samples);
+    free(samples);
 
     free(datasets);
     free(test);
