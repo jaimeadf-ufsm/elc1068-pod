@@ -7,43 +7,27 @@
 #include "input.h"
 #include "stats.h"
 
-int *generate_datasets(int number_count, int sample_count)
+void generate_random_numbers(int *numbers, int n)
 {
-    int *datasets = (int *)malloc(sample_count * number_count * sizeof(int));
-
-    for (int i = 0; i < sample_count; i++)
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < number_count; j++)
-        {
-            datasets[i * number_count + j] = rand();
-        }
-    }
-
-    return datasets;
-}
-
-void copy_dataset(int *target, int *datasets, int number_count, int sample_index)
-{
-    for (int i = 0; i < number_count; i++)
-    {
-        target[i] = datasets[sample_index * number_count + i];
+        numbers[i] = rand();
     }
 }
 
-
-double measure_quicksort(int *dataset, int n)
+double measure_quicksort(int *numbers, int n)
 {
     Timer timer = start_timer();
-    quicksort(dataset, 0, n - 1);
+    quicksort(numbers, 0, n - 1);
     stop_timer(&timer);
 
     return get_timer_nanoseconds(&timer) / 1e6; 
 }
 
-double measure_quicksert(int *dataset, int n, int threshold)
+double measure_quicksert(int *numbers, int n, int threshold)
 {
     Timer timer = start_timer();
-    quicksert(dataset, 0, n - 1, threshold);
+    quicksert(numbers, 0, n - 1, threshold);
     stop_timer(&timer);
 
     return get_timer_nanoseconds(&timer) / 1e6;
@@ -71,16 +55,14 @@ int main(int argc, char *argv[])
     fprintf(stderr, "N: %d, Samples: %d, Threshold: [%d, %d], Seed: %d\n", number_count, sample_count, threshold_min, threshold_max, seed);
 
     double *samples = malloc(sample_count * sizeof(double));
-
-    int *datasets = generate_datasets(number_count, sample_count);
-    int *test = (int *)malloc(number_count * sizeof(int));
+    int *numbers = malloc(number_count * sizeof(int));
 
     srand(seed);
 
     for (int i = 0; i < sample_count; i++)
     {
-        copy_dataset(test, datasets, number_count, i);
-        samples[i] = measure_quicksort(test, number_count);
+        generate_random_numbers(numbers, number_count);
+        samples[i] = measure_quicksort(numbers, number_count);
     }
 
     Stats quicksort_stats = compute_stats(samples, sample_count);
@@ -97,10 +79,12 @@ int main(int argc, char *argv[])
 
     for (int threshold = threshold_min; threshold <= threshold_max; threshold++)
     {
+        srand(seed);
+
         for (int i = 0; i < sample_count; i++)
         {
-            copy_dataset(test, datasets, number_count, i);
-            samples[i] = measure_quicksert(test, number_count, threshold);
+            generate_random_numbers(numbers, number_count);
+            samples[i] = measure_quicksert(numbers, number_count, threshold);
         }
 
         Stats quicksert_stats = compute_stats(samples, sample_count);
@@ -120,9 +104,7 @@ int main(int argc, char *argv[])
     }
 
     free(samples);
-
-    free(datasets);
-    free(test);
+    free(numbers);
 
     return 0;
 }
