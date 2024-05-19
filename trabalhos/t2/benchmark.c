@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
         seed = parse_int_or_exit(argv[5]);
     }
 
-    fprintf(stderr, "N: %d, Samples: %d, Threshold: [%d, %d], Seed: %d\n", number_count, sample_count, threshold_min, threshold_max, seed);
+    printf("N: %d, Samples: %d, Threshold: [%d, %d], Seed: %d\n", number_count, sample_count, threshold_min, threshold_max, seed);
 
     double *samples = malloc(sample_count * sizeof(double));
     int *numbers = malloc(number_count * sizeof(int));
@@ -67,8 +67,7 @@ int main(int argc, char *argv[])
 
     Stats quicksort_stats = compute_stats(samples, sample_count);
 
-    fprintf(
-        stderr,
+    printf(
         "Quicksort: Min: %.2lf, Max: %.2lf, Avg: %.2lf, Median: %.2lf, Stddev: %.2lf\n",
         quicksort_stats.minimum,
         quicksort_stats.maximum,
@@ -89,8 +88,7 @@ int main(int argc, char *argv[])
 
         Stats quicksert_stats = compute_stats(samples, sample_count);
     
-        fprintf(
-            stderr,
+        printf(
             "Quicksert (%d): Min: %.2lf, Max: %.2lf, Avg: %.2lf (%.2lf%%), Median: %.2lf (%.2lf%%), Stddev: %.2lf\n",
             threshold,
             quicksert_stats.minimum,
