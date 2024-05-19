@@ -76,6 +76,12 @@ int main(int argc, char *argv[])
         quicksort_stats.standard_deviation
     );
 
+    int best_average_threshold = 0;
+    int best_median_threshold = 0;
+
+    double best_average_value = INFINITY;
+    double best_median_value = INFINITY;
+
     for (int threshold = threshold_min; threshold <= threshold_max; threshold++)
     {
         srand(seed);
@@ -99,7 +105,27 @@ int main(int argc, char *argv[])
             compute_percentange_change(quicksert_stats.median, quicksort_stats.median),
             quicksert_stats.standard_deviation
         );
+
+        if (quicksert_stats.average < best_average_value)
+        {
+            best_average_value = quicksert_stats.average;
+            best_average_threshold = threshold;
+        }
+
+        if (quicksert_stats.median < best_median_value)
+        {
+            best_median_value = quicksert_stats.median;
+            best_median_threshold = threshold;
+        }
     }
+
+    printf(
+        "\nBest: Average: %.2lf (Threshold: %d), Median: %.2lf (Threshold: %d)\n",
+        best_average_value,
+        best_average_threshold,
+        best_median_value,
+        best_median_threshold
+    );
 
     free(samples);
     free(numbers);
