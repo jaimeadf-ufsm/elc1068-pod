@@ -18,7 +18,7 @@ void generate_random_numbers(int *numbers, int n)
 double measure_quicksort(int *numbers, int n)
 {
     Timer timer = start_timer();
-    quicksort(numbers, 0, n - 1);
+    quicksort(numbers, n);
     stop_timer(&timer);
 
     return get_timer_nanoseconds(&timer) / 1e6; 
@@ -27,7 +27,7 @@ double measure_quicksort(int *numbers, int n)
 double measure_quicksert(int *numbers, int n, int threshold)
 {
     Timer timer = start_timer();
-    quicksert(numbers, 0, n - 1, threshold);
+    quicksert(numbers, n, threshold);
     stop_timer(&timer);
 
     return get_timer_nanoseconds(&timer) / 1e6;
