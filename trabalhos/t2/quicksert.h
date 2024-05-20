@@ -30,12 +30,12 @@ int quicksort_partition(int *array, int low, int high)
         do
         {
             i++;
-        } while (array[i] < pivot);
+        } while (i < high && array[i] < pivot);
 
         do
         {
             j--;
-        } while (array[j] > pivot);
+        } while (j > low && array[j] > pivot);
 
         if (i >= j)
         {
