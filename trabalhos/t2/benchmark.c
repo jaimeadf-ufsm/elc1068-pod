@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
 
     printf("N: %d, Samples: %d, Threshold: [%d, %d], Seed: %d\n", number_count, sample_count, threshold_min, threshold_max, seed);
 
-    double *samples = malloc(sample_count * sizeof(double));
-    int *numbers = malloc(number_count * sizeof(int));
+    double *samples = (double *)malloc(sample_count * sizeof(double));
+    int *numbers = (int *)malloc(number_count * sizeof(int));
 
     srand(seed);
 
@@ -106,13 +106,13 @@ int main(int argc, char *argv[])
             quicksert_stats.standard_deviation
         );
 
-        if (quicksert_stats.average < best_average_value)
+        if (quicksert_stats.average <= best_average_value)
         {
             best_average_value = quicksert_stats.average;
             best_average_threshold = threshold;
         }
 
-        if (quicksert_stats.median < best_median_value)
+        if (quicksert_stats.median <= best_median_value)
         {
             best_median_value = quicksert_stats.median;
             best_median_threshold = threshold;
