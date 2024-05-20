@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "input.h"
-#include "externalsort.h"
+#include "lib/external_sort.h"
 
 int compare(const void *a, const void *b)
 {

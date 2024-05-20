@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "heap.h"
-#include "timer.h"
+#include "lib/external_heap.h"
+#include "lib/high_precision_timer.h"
 
 typedef struct element Element;
 typedef struct run Run;
