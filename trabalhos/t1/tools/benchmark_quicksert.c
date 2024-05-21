@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "lib/high_precision_timer.h"
-#include "lib/input.h"
-#include "lib/stats.h"
-#include "lib/quicksert.h"
+#include "common/high_precision_timer.h"
+#include "common/input.h"
+#include "common/stats.h"
+#include "common/quicksert.h"
 
 void generate_random_numbers(int *numbers, int n)
 {

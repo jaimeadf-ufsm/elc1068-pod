@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <time.h>
 
-#include "lib/input.h"
+#include "common/input.h"
 
 bool is_size(char *str)
 {
