@@ -38,7 +38,7 @@ long long generate_random_numbers_by_count(FILE *file, long long count, int modu
 {
     for (long long i = 0; i < count; i++)
     {
-        fprintf(file, "%lld\n", rand() % modulo);
+        fprintf(file, "%d\n", rand() % modulo);
     }
 
     return count;
@@ -51,7 +51,7 @@ long long generate_random_numbers_by_size(FILE *file, long long size, int modulo
 
     while (file_size < size)
     {
-        fprintf(file, "%lld\n", rand() % modulo);
+        fprintf(file, "%d\n", rand() % modulo);
         fseek(file, 0, SEEK_END);
 
         file_size = ftell(file);

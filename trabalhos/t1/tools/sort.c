@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "common/input.h"
 #include "common/external_sort.h"
