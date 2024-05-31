@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "common/input.h"
+#include "common/buffered_io.h"
 
 bool is_size(char *str)
 {
@@ -34,28 +35,25 @@ long long parse_size_or_exit(char *str)
     }
 }
 
-long long generate_random_numbers_by_count(FILE *file, long long count, int modulo)
+long long generate_random_numbers_by_count(BufferedWriter *writer, long long count, int modulo)
 {
     for (long long i = 0; i < count; i++)
     {
-        fprintf(file, "%d\n", rand() % modulo);
+        write_number(writer, rand() % modulo);
     }
 
     return count;
 }
 
-long long generate_random_numbers_by_size(FILE *file, long long size, int modulo)
+long long generate_random_numbers_by_size(BufferedWriter *writer, long long size, int modulo)
 {
     long long file_size = 0;
     long long count = 0;
 
     while (file_size < size)
     {
-        fprintf(file, "%d\n", rand() % modulo);
-        fseek(file, 0, SEEK_END);
-
-        file_size = ftell(file);
-        
+        write_number(writer, rand() % modulo);
+        file_size = ftell(writer->file);
         count++;
     }
 
@@ -82,19 +80,19 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
 
-    FILE *output = fopen(filename, "w");
+    BufferedWriter output = open_writer(filename, 8192); // 8KB
     long long count = 0;
 
     if (is_size(amount))
     {
-        count = generate_random_numbers_by_size(output, parse_size_or_exit(amount), modulo);
+        count = generate_random_numbers_by_size(&output, parse_size_or_exit(amount), modulo);
     }
     else
     {
-        count = generate_random_numbers_by_count(output, parse_long_long_or_exit(amount), modulo);
+        count = generate_random_numbers_by_count(&output, parse_long_long_or_exit(amount), modulo);
     }
 
-    fclose(output);
+    close_writer(&output);
     fprintf(stderr, "DEBUG: generated %lld numbers.\n", count);
 
     return 0;
