@@ -9,6 +9,8 @@
 #include "common/input.h"
 #include "common/buffered_io.h"
 
+#define BUFFER_SIZE 512 * 1024
+
 bool is_size(char *str)
 {
     return isalpha(str[strlen(str) - 1]);
@@ -52,8 +54,7 @@ long long generate_random_numbers_by_size(BufferedWriter *writer, long long size
 
     while (file_size < size)
     {
-        write_number(writer, rand() % modulo);
-        file_size = ftell(writer->file);
+        file_size += write_number(writer, rand() % modulo);
         count++;
     }
 
@@ -80,19 +81,19 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
 
-    BufferedWriter output = open_writer(filename, 8192); // 8KB
+    BufferedWriter writer = open_writer(filename, BUFFER_SIZE);
     long long count = 0;
 
     if (is_size(amount))
     {
-        count = generate_random_numbers_by_size(&output, parse_size_or_exit(amount), modulo);
+        count = generate_random_numbers_by_size(&writer, parse_size_or_exit(amount), modulo);
     }
     else
     {
-        count = generate_random_numbers_by_count(&output, parse_long_long_or_exit(amount), modulo);
+        count = generate_random_numbers_by_count(&writer, parse_long_long_or_exit(amount), modulo);
     }
 
-    close_writer(&output);
+    close_writer(&writer);
     fprintf(stderr, "DEBUG: generated %lld numbers.\n", count);
 
     return 0;

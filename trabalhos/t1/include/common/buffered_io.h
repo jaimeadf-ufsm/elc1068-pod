@@ -35,7 +35,7 @@ BufferedWriter open_writer(char *filename, int capacity);
 void flush_writer(BufferedWriter *writer);
 void close_writer(BufferedWriter *writer);
 
-void write_number(BufferedWriter *writer, int number);
+int write_number(BufferedWriter *writer, int number);
 void write_char(BufferedWriter *writer, char c);
 
 #endif

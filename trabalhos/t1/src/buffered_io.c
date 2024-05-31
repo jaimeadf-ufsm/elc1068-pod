@@ -93,38 +93,29 @@ void close_writer(BufferedWriter *writer)
     free(writer->buffer);
 }
 
-void write_number(BufferedWriter *writer, int number)
+int write_number(BufferedWriter *writer, int number)
 {
-    char *buffer = NULL;
-    int buffer_size = 0;
-    int index = 0;
+    int characters = 1;
 
-    do
+    if (number < 0)
     {
-
-        if (index >= buffer_size)
-        {
-            buffer_size += 10;
-            buffer = (char *)realloc(buffer, buffer_size * sizeof(char));
-            if (buffer == NULL)
-            {
-                fprintf(stderr, "ERROR: Memory allocation failed.\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        buffer[index++] = number % 10 + '0';
-        number /= 10;
-    } while (number > 0);
-
-    for (int i = index - 1; i >= 0; i--)
-    {
-        write_char(writer, buffer[i]);
+        write_char(writer, '-');
+        number = -number;
+        characters++;
     }
 
-    free(buffer);
+    for (int i = 1000000000; i > 0; i /= 10)
+    {
+        if (number >= i)
+        {
+            write_char(writer, '0' + (number / i) % 10);
+            characters++;
+        }
+    }
 
     write_char(writer, '\n');
+
+    return characters;
 }
 
 void write_char(BufferedWriter *writer, char c)
