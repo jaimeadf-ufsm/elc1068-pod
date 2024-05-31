@@ -6,6 +6,7 @@
 
 #include "common/external_sort.h"
 #include "common/high_precision_timer.h"
+#include "common/buffered_io.h"
 
 typedef struct run Run;
 
@@ -22,13 +23,13 @@ bool take_run_element_out(FILE *file, Element *out)
     return fread(&out->value, sizeof(int), 1, file) == 1;
 }
 
-int create_runs(Run *runs, char *input_filename, int run_count, int run_size, SortFunction sort)
+int create_runs(Run *runs, char *input_filename, int run_count, int run_size, SortFunction sort, int buffer_size)
 {
     fprintf(stderr, "DEBUG: creating runs...\n");
 
-    FILE *input_file = fopen(input_filename, "r");
+    BufferedReader buffer = open_reader(input_filename, buffer_size);
 
-    int *array = (int*)malloc(run_size * sizeof(int));
+    int *array = (int *)malloc(run_size * sizeof(int));
     int element_count = 0;
 
     for (int i = 0; i < run_count; i++)
@@ -38,11 +39,10 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
         sprintf(runs[i].filename, "%s/%06d.tmp", TMP_DIR, i);
         FILE *run_file = fopen(runs[i].filename, "wb");
 
-        while (n < run_size && fscanf(input_file, "%d", &array[n]) == 1)
+        while (n < run_size && (array[n] = read_number(&buffer)) != EOF && !has_reader_ended(&buffer))
         {
             n++;
         }
-
         Timer timer = start_timer();
         sort(array, n);
         stop_timer(&timer);
@@ -60,6 +60,7 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
         }
     }
 
+    close_reader(&buffer);
     free(array);
 
     fprintf(stderr, "DEBUG: %d elements read.\n", element_count);
@@ -67,12 +68,18 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
     return element_count;
 }
 
-void merge_runs(Run *runs, char *output_filename, int run_count, int element_count)
+void merge_runs(Run *runs, char *output_filename, int run_count, int element_count, int buffer_size)
 {
     fprintf(stderr, "DEBUG: merging runs...\n");
 
-    FILE *output_file = fopen(output_filename, "w");
+    BufferedWriter buffer = open_writer(output_filename, buffer_size);
+
     FILE **run_files = (FILE **)malloc(run_count * sizeof(FILE *));
+    if (run_files == NULL)
+    {
+        fprintf(stderr, "ERROR: Unable to allocate memory for run files\n");
+        exit(EXIT_FAILURE);
+    }
 
     Heap heap = create_heap(run_count);
 
@@ -81,7 +88,12 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     {
         Element element;
 
-        run_files[i] = fopen(runs[i].filename, "rb");
+        run_files[i] = fopen(runs[i].filename, "r");
+        if (run_files[i] == NULL)
+        {
+            fprintf(stderr, "ERROR: Unable to open run file '%s'\n", runs[i].filename);
+            exit(EXIT_FAILURE);
+        }
 
         if (take_run_element_out(run_files[i], &element))
         {
@@ -103,7 +115,7 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     {
         Element root = *peek_heap(&heap);
 
-        fprintf(output_file, "%d\n", root.value);
+        write_number(&buffer, root.value);
 
         if (take_run_element_out(root.file, &root))
         {
@@ -126,12 +138,14 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
 
     fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_nanoseconds(&timer) / 1e9);
 
+    flush_writer(&buffer);
+
+    close_writer(&buffer);
+
     for (int i = 0; i < run_count; i++)
     {
         fclose(run_files[i]);
     }
-
-    fclose(output_file);
 
     free_heap(&heap);
     free(run_files);
@@ -147,14 +161,13 @@ void clear_runs(Run *runs, int run_count)
     }
 }
 
-void sort_files(char *input_filename, char *output_filename, int run_count, int run_size, SortFunction sort)
+void sort_files(char *input_filename, char *output_filename, int run_count, int run_size, SortFunction sort, int buffer_size)
 {
+
     Run *runs = (Run *)malloc(run_count * sizeof(Run));
 
-    int element_count = create_runs(runs, input_filename, run_count, run_size, sort);
+    int element_count = create_runs(runs, input_filename, run_count, run_size, sort, buffer_size);
 
-    merge_runs(runs, output_filename, run_count, element_count);
+    merge_runs(runs, output_filename, run_count, element_count, buffer_size);
     clear_runs(runs, run_count);
-
-    free(runs);
 }

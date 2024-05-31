@@ -3,6 +3,6 @@
 
 typedef void (*SortFunction)(int *, int);
 
-void sort_files(char *input_filename, char *output_filename, int run_count, int run_size, SortFunction sort);
+void sort_files(char *input_filename, char *output_filename, int run_count, int run_size, SortFunction sort, int buffer_size);
 
 #endif
