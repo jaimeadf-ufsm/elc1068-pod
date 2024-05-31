@@ -6,7 +6,6 @@
 
 #include "common/external_sort.h"
 #include "common/high_precision_timer.h"
-#include "common/buffered_io.h"
 
 typedef struct run Run;
 
@@ -17,17 +16,25 @@ struct run
     char filename[256];
 };
 
-bool take_run_element_out(FILE *file, Element *out)
+bool take_run_element_out(BufferedReader *reader, Element *out)
 {
-    out->file = file;
-    return fread(&out->value, sizeof(int), 1, file) == 1;
+    out->reader = reader;
+
+    if (has_reader_ended(reader))
+    {
+        return false;
+    }
+
+    out->value = read_number(reader);
+
+    return true;
 }
 
 int create_runs(Run *runs, char *input_filename, int run_count, int run_size, SortFunction sort, int buffer_size)
 {
     fprintf(stderr, "DEBUG: creating runs...\n");
 
-    BufferedReader buffer = open_reader(input_filename, buffer_size);
+    BufferedReader input_reader = open_reader(input_filename, buffer_size);
 
     int *array = (int *)malloc(run_size * sizeof(int));
     int element_count = 0;
@@ -37,30 +44,29 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
         int n = 0;
 
         sprintf(runs[i].filename, "%s/%06d.tmp", TMP_DIR, i);
-        FILE *run_file = fopen(runs[i].filename, "wb");
+        BufferedWriter run_writer = open_writer(runs[i].filename, buffer_size);
 
-        while (n < run_size && (array[n] = read_number(&buffer)) != EOF && !has_reader_ended(&buffer))
+        while (n < run_size && !has_reader_ended(&input_reader))
         {
-            n++;
+            array[n++] = read_number(&input_reader);
         }
+
         Timer timer = start_timer();
         sort(array, n);
         stop_timer(&timer);
 
         fprintf(stderr, "DEBUG: %d elements of run %d sorted in %.2fs.\n", n, i, get_timer_nanoseconds(&timer) / 1e9);
 
-        fwrite(array, sizeof(int), n, run_file);
-        fclose(run_file);
+        for (int j = 0; j < n; j++)
+        {
+            write_number(&run_writer, array[j]);
+        }
 
         element_count += n;
-
-        if (n < run_size)
-        {
-            break;
-        }
+        close_writer(&run_writer);
     }
 
-    close_reader(&buffer);
+    close_reader(&input_reader);
     free(array);
 
     fprintf(stderr, "DEBUG: %d elements read.\n", element_count);
@@ -72,12 +78,12 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
 {
     fprintf(stderr, "DEBUG: merging runs...\n");
 
-    BufferedWriter buffer = open_writer(output_filename, buffer_size);
+    BufferedWriter output_writer = open_writer(output_filename, buffer_size);
+    BufferedReader *run_readers = (BufferedReader *)malloc(run_count * sizeof(BufferedReader));
 
-    FILE **run_files = (FILE **)malloc(run_count * sizeof(FILE *));
-    if (run_files == NULL)
+    if (run_readers == NULL)
     {
-        fprintf(stderr, "ERROR: Unable to allocate memory for run files\n");
+        fprintf(stderr, "ERROR: unable to allocate memory for run readers\n");
         exit(EXIT_FAILURE);
     }
 
@@ -88,14 +94,9 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     {
         Element element;
 
-        run_files[i] = fopen(runs[i].filename, "r");
-        if (run_files[i] == NULL)
-        {
-            fprintf(stderr, "ERROR: Unable to open run file '%s'\n", runs[i].filename);
-            exit(EXIT_FAILURE);
-        }
+        run_readers[i] = open_reader(runs[i].filename, buffer_size);
 
-        if (take_run_element_out(run_files[i], &element))
+        if (take_run_element_out(&run_readers[i], &element))
         {
             push_heap(&heap, &element);
         }
@@ -115,9 +116,9 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     {
         Element root = *peek_heap(&heap);
 
-        write_number(&buffer, root.value);
+        write_number(&output_writer, root.value);
 
-        if (take_run_element_out(root.file, &root))
+        if (take_run_element_out(root.reader, &root))
         {
             replace_heap(&heap, &root);
         }
@@ -138,17 +139,15 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
 
     fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_nanoseconds(&timer) / 1e9);
 
-    flush_writer(&buffer);
-
-    close_writer(&buffer);
+    close_writer(&output_writer);
 
     for (int i = 0; i < run_count; i++)
     {
-        fclose(run_files[i]);
+        close_reader(&run_readers[i]);
     }
 
     free_heap(&heap);
-    free(run_files);
+    free(run_readers);
 }
 
 void clear_runs(Run *runs, int run_count)
@@ -163,11 +162,12 @@ void clear_runs(Run *runs, int run_count)
 
 void sort_files(char *input_filename, char *output_filename, int run_count, int run_size, SortFunction sort, int buffer_size)
 {
-
     Run *runs = (Run *)malloc(run_count * sizeof(Run));
 
     int element_count = create_runs(runs, input_filename, run_count, run_size, sort, buffer_size);
 
     merge_runs(runs, output_filename, run_count, element_count, buffer_size);
     clear_runs(runs, run_count);
+
+    free(runs);
 }

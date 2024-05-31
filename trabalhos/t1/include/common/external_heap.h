@@ -3,12 +3,14 @@
 
 #include <stdbool.h>
 
+#include "buffered_io.h"
+
 typedef struct element Element;
 typedef struct heap Heap;
 
 struct element {
     int value;
-    FILE *file;
+    BufferedReader *reader;
 };
 
 struct heap

@@ -4,6 +4,17 @@
 
 #include "common/buffered_io.h"
 
+void ensure_buffer_is_not_empty(BufferedReader *reader)
+{
+    if (reader->index < reader->size)
+    {
+        return;
+    }
+
+    reader->size = fread(reader->buffer, sizeof(char), reader->capacity, reader->file);
+    reader->index = 0;
+}
+
 BufferedReader open_reader(char *filename, int capacity)
 {
     BufferedReader reader;
@@ -12,6 +23,12 @@ BufferedReader open_reader(char *filename, int capacity)
     reader.index = 0;
     reader.size = 0;
     reader.capacity = capacity;
+
+    if (reader.file == NULL)
+    {
+        fprintf(stderr, "ERROR: could not open file \"%s\".\n", filename);
+        exit(EXIT_FAILURE);
+    }
 
     return reader;
 }
@@ -48,12 +65,6 @@ int read_number(BufferedReader *reader)
     return number;
 }
 
-void refill_reader_buffer(BufferedReader *reader)
-{
-    reader->size = fread(reader->buffer, sizeof(char), reader->capacity, reader->file);
-    reader->index = 0;
-}
-
 char read_char(BufferedReader *reader)
 {
     if (has_reader_ended(reader))
@@ -62,17 +73,13 @@ char read_char(BufferedReader *reader)
         exit(EXIT_FAILURE);
     }
 
-    if (reader->index == reader->size)
-    {
-        refill_reader_buffer(reader);
-    }
-
     return reader->buffer[reader->index++];
 }
 
 bool has_reader_ended(BufferedReader *reader)
 {
-    return reader->index == reader->size && feof(reader->file);
+    ensure_buffer_is_not_empty(reader);
+    return reader->size == 0;
 }
 
 BufferedWriter open_writer(char *filename, int capacity)
@@ -82,6 +89,12 @@ BufferedWriter open_writer(char *filename, int capacity)
     writer.buffer = (char *)malloc(capacity * sizeof(char));
     writer.size = 0;
     writer.capacity = capacity;
+
+    if (writer.file == NULL)
+    {
+        fprintf(stderr, "ERROR: could not open file \"%s\".\n", filename);
+        exit(EXIT_FAILURE);
+    }
 
     return writer;
 }
