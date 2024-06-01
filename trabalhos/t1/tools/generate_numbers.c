@@ -9,7 +9,7 @@
 #include "common/input.h"
 #include "common/buffered_io.h"
 
-#define BUFFER_SIZE 512 * 1024
+#define BUFFER_SIZE 16 * 1024
 
 bool is_size(char *str)
 {
