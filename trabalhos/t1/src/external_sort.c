@@ -16,18 +16,24 @@ struct run
     char filename[256];
 };
 
-bool take_run_element_out(BufferedReader *reader, Element *out)
+int read_run(BufferedReader *reader, int *array, int maximum_size)
 {
-    out->reader = reader;
+    int n = 0;
 
-    if (has_reader_ended(reader))
+    while (n < maximum_size && !has_reader_ended(reader))
     {
-        return false;
+        array[n++] = read_number(reader);
     }
 
-    out->value = read_number(reader);
+    return n;
+}
 
-    return true;
+void write_run(BufferedWriter *writer, int *array, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        write_number(writer, array[i]);
+    }
 }
 
 int create_runs(Run *runs, char *input_filename, int run_count, int run_size, SortFunction sort, int buffer_size)
@@ -41,35 +47,45 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
 
     for (int i = 0; i < run_count; i++)
     {
-        int n = 0;
-
         sprintf(runs[i].filename, "%s/%06d.tmp", TMP_DIR, i);
+
         BufferedWriter run_writer = open_writer(runs[i].filename, buffer_size);
 
-        while (n < run_size && !has_reader_ended(&input_reader))
-        {
-            array[n++] = read_number(&input_reader);
-        }
+        Timer read_timer = start_timer();
+        int n = read_run(&input_reader, array, run_size);
+        stop_timer(&read_timer);
 
-        Timer timer = start_timer();
+        Timer reading_timer = start_timer();
         sort(array, n);
-        stop_timer(&timer);
+        stop_timer(&reading_timer);
 
-        fprintf(stderr, "DEBUG: %d elements of run %d sorted in %.2fs.\n", n, i, get_timer_nanoseconds(&timer) / 1e9);
-
-        for (int j = 0; j < n; j++)
-        {
-            write_number(&run_writer, array[j]);
-        }
+        Timer writing_timer = start_timer();
+        write_run(&run_writer, array, n);
+        close_writer(&run_writer);
+        stop_timer(&writing_timer);
 
         element_count += n;
-        close_writer(&run_writer);
+
+        double reading_seconds = get_timer_nanoseconds(&read_timer) / 1e9;
+        double sorting_seconds = get_timer_nanoseconds(&reading_timer) / 1e9;
+        double writing_seconds = get_timer_nanoseconds(&writing_timer) / 1e9;
+
+        fprintf(
+            stderr,
+            "DEBUG: created run %d with %d elements in %.2lfs (reading: %.2lfs, sorting: %.2lfs, writing: %.2lfs).\n",
+            i,
+            n,
+            reading_seconds + sorting_seconds + writing_seconds,
+            reading_seconds,
+            sorting_seconds,
+            writing_seconds
+        );
     }
 
     close_reader(&input_reader);
     free(array);
 
-    fprintf(stderr, "DEBUG: %d elements read.\n", element_count);
+    fprintf(stderr, "DEBUG: created %d runs with %d elements.\n", run_count, element_count);
 
     return element_count;
 }
@@ -78,8 +94,8 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
 {
     fprintf(stderr, "DEBUG: merging runs...\n");
 
-    BufferedWriter output_writer = open_writer(output_filename, buffer_size);
     BufferedReader *run_readers = (BufferedReader *)malloc(run_count * sizeof(BufferedReader));
+    BufferedWriter output_writer = open_writer(output_filename, buffer_size);
 
     if (run_readers == NULL)
     {
@@ -92,12 +108,14 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     fprintf(stderr, "DEBUG: creating initial nodes in heap...\n");
     for (int i = 0; i < run_count; i++)
     {
-        Element element;
-
         run_readers[i] = open_reader(runs[i].filename, buffer_size);
 
-        if (take_run_element_out(&run_readers[i], &element))
+        if (!has_reader_ended(&run_readers[i]))
         {
+            Element element;
+            element.reader = &run_readers[i];
+            element.value = read_number(&run_readers[i]);
+
             push_heap(&heap, &element);
         }
     }
@@ -118,9 +136,13 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
 
         write_number(&output_writer, root.value);
 
-        if (take_run_element_out(root.reader, &root))
+        if (!has_reader_ended(root.reader))
         {
-            replace_heap(&heap, &root);
+            Element element;
+            element.reader = root.reader;
+            element.value = read_number(root.reader);
+
+            replace_heap(&heap, &element);
         }
         else
         {
@@ -135,16 +157,15 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
         }
     }
 
-    stop_timer(&timer);
-
-    fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_nanoseconds(&timer) / 1e9);
-
     close_writer(&output_writer);
+    stop_timer(&timer);
 
     for (int i = 0; i < run_count; i++)
     {
         close_reader(&run_readers[i]);
     }
+
+    fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_nanoseconds(&timer) / 1e9);
 
     free_heap(&heap);
     free(run_readers);
