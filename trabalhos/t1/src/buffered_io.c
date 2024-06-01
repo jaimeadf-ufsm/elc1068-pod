@@ -131,6 +131,12 @@ int write_number(BufferedWriter *writer, int number)
         }
     }
 
+    if (number == 0)
+    {
+        write_char(writer, '0');
+        characters++;
+    }
+
     write_char(writer, '\n');
 
     return characters;
