@@ -49,17 +49,17 @@ int read_number(BufferedReader *reader)
         c = read_char(reader);
     }
 
-    while (isdigit(c))
+    do
     {
+        if (!isdigit(c))
+        {
+            fprintf(stderr, "ERROR: invalid character '%c' when trying to read number.\n", c);
+            exit(EXIT_FAILURE);
+        }
+
         number = number * 10 + (c - '0');
         c = read_char(reader);
-    }
-
-    if (c != '\n')
-    {
-        fprintf(stderr, "ERROR: invalid character '%c' when trying to read number.\n", c);
-        exit(EXIT_FAILURE);
-    }
+    } while (c != '\n');
 
     return sign * number;
 }
