@@ -38,28 +38,30 @@ void close_reader(BufferedReader *reader)
 
 int read_number(BufferedReader *reader)
 {
+    int sign = 1;
     int number = 0;
 
-    while (true)
+    char c = read_char(reader);
+
+    if (c == '-')
     {
-
-        char c = read_char(reader);
-
-        if (!isdigit(c))
-        {
-            if (c == '\n')
-            {
-                break;
-            }
-
-            fprintf(stderr, "ERROR: unexpected end of number. Expected: '\\n', Received: %c.\n", c);
-            exit(EXIT_FAILURE);
-        }
-
-        number = number * 10 + (c - '0');
+        sign = -1;
+        c = read_char(reader);
     }
 
-    return number;
+    while (isdigit(c))
+    {
+        number = number * 10 + (c - '0');
+        c = read_char(reader);
+    }
+
+    if (c != '\n')
+    {
+        fprintf(stderr, "ERROR: invalid character '%c' when trying to read number.\n", c);
+        exit(EXIT_FAILURE);
+    }
+
+    return sign * number;
 }
 
 char read_char(BufferedReader *reader)
