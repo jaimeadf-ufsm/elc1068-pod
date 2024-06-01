@@ -153,7 +153,7 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
 
         if (merged_count % merged_step == 0)
         {
-            fprintf(stderr, "DEBUG: %d elements merged (%.1lf%%).\n", merged_count, merged_count * 100.0 / element_count);
+            fprintf(stderr, "DEBUG: %d elements merged (%.2lf%%).\n", merged_count, merged_count * 100.0 / element_count);
         }
     }
 
