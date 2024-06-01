@@ -17,36 +17,6 @@ void sort(int *array, int n)
     qsort(array, n, sizeof(int), compare);
 }
 
-#include <stdbool.h>
-
-bool is_sorted(char *filename)
-{
-    FILE *file = fopen(filename, "r");
-
-    if (file == NULL)
-    {
-        return false;
-    }
-
-    int prev_num, curr_num;
-    bool first_num = true;
-
-    while (fscanf(file, "%d", &curr_num) == 1)
-    {
-        if (!first_num && curr_num < prev_num)
-        {
-            fclose(file);
-            return false;
-        }
-
-        prev_num = curr_num;
-        first_num = false;
-    }
-
-    fclose(file);
-    return true;
-}
-
 int main(int argc, char **argv)
 {
     if (argc < 5)
@@ -63,17 +33,6 @@ int main(int argc, char **argv)
     int buffer_size = parse_int_or_exit(argv[5]);
 
     sort_files(input_filename, output_filename, run_count, run_size, sort, buffer_size);
-
-    // debug
-    bool sorted_output = is_sorted(output_filename);
-    if (sorted_output)
-    {
-        printf("true\n");
-    }
-    else
-    {
-        printf("false\n");
-    }
 
     return 0;
 }
