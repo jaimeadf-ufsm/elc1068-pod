@@ -4,13 +4,8 @@
 
 #include "common/buffered_io.h"
 
-void ensure_buffer_is_not_empty(BufferedReader *reader)
+void fill_reader_buffer(BufferedReader *reader)
 {
-    if (reader->index < reader->size)
-    {
-        return;
-    }
-
     reader->size = fread(reader->buffer, sizeof(char), reader->capacity, reader->file);
     reader->index = 0;
 }
@@ -29,6 +24,8 @@ BufferedReader open_reader(char *filename, int capacity)
         fprintf(stderr, "ERROR: could not open file \"%s\".\n", filename);
         exit(EXIT_FAILURE);
     }
+
+    fill_reader_buffer(&reader);
 
     return reader;
 }
@@ -73,12 +70,18 @@ char read_char(BufferedReader *reader)
         exit(EXIT_FAILURE);
     }
 
-    return reader->buffer[reader->index++];
+    char c = reader->buffer[reader->index++];
+
+    if (reader->index == reader->size)
+    {
+        fill_reader_buffer(reader);
+    }
+
+    return c;
 }
 
 bool has_reader_ended(BufferedReader *reader)
 {
-    ensure_buffer_is_not_empty(reader);
     return reader->size == 0;
 }
 
