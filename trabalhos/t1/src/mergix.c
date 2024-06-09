@@ -39,7 +39,8 @@ void merge(int *array, int left, int mid, int right)
     int left_size = mid - left + 1;
     int right_size = right - mid;
 
-    int Left[left_size], Right[right_size];
+    int *Left = (int *)malloc(left_size * sizeof(int));
+    int *Right = (int *)malloc(right_size * sizeof(int));
 
     for (left_index = 0; left_index < left_size; left_index++)
         Left[left_index] = array[left + left_index];
@@ -77,6 +78,9 @@ void merge(int *array, int left, int mid, int right)
         right_index++;
         merged_index++;
     }
+
+    free(Left);
+    free(Right);
 }
 
 void mergix(int *array, int left, int right)
