@@ -57,7 +57,9 @@ void quicksert_recursion(int *array, int low, int high, int threshold)
 
 void insertionsort(int *array, int n)
 {
-    for (int i = 1; i < n; i++)
+    int i;
+
+    for (i = 1; i < n; i++)
     {
         int j = i;
         int temporary = array[i];

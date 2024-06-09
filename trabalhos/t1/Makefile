@@ -1,7 +1,7 @@
 .SECONDARY:
 
 CC=gcc
-CFLAGS=-Wall -Wextra -O3 -g -Iinclude -MP -MD
+CFLAGS=-Wall -Wextra -ansi -O3 -g -Iinclude -MP -MD
 
 COMMON_DIR=src
 TOOLS_DIR=tools

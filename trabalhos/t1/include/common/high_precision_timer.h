@@ -12,11 +12,11 @@ typedef struct timer Timer;
         LARGE_INTEGER end;
     };
 #else
-    #include <time.h>
+    #include <sys/time.h>
 
     struct timer {
-        struct timespec start;
-        struct timespec end;
+        struct timeval start;
+        struct timeval end;
     };
 #endif
 

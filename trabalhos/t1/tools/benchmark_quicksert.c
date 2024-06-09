@@ -9,7 +9,9 @@
 
 void generate_random_numbers(int *numbers, int n)
 {
-    for (int i = 0; i < n; i++)
+    int i;
+
+    for (i = 0; i < n; i++)
     {
         numbers[i] = rand();
     }
@@ -59,7 +61,9 @@ int main(int argc, char *argv[])
 
     srand(seed);
 
-    for (int i = 0; i < sample_count; i++)
+    int i;
+
+    for (i = 0; i < sample_count; i++)
     {
         generate_random_numbers(numbers, number_count);
         samples[i] = measure_quicksort(numbers, number_count);
@@ -79,17 +83,21 @@ int main(int argc, char *argv[])
     int best_average_threshold = 0;
     int best_median_threshold = 0;
 
-    double best_average_value = INFINITY;
-    double best_median_value = INFINITY;
+    double best_average_value = HUGE_VAL;
+    double best_median_value = HUGE_VAL;
 
-    for (int threshold = threshold_min; threshold <= threshold_max; threshold++)
+    int threshold;
+
+    for (threshold = threshold_min; threshold <= threshold_max; threshold++)
     {
         srand(seed);
 
-        for (int i = 0; i < sample_count; i++)
+        int j;
+
+        for (j = 0; j < sample_count; j++)
         {
             generate_random_numbers(numbers, number_count);
-            samples[i] = measure_quicksert(numbers, number_count, threshold);
+            samples[j] = measure_quicksert(numbers, number_count, threshold);
         }
 
         Stats quicksert_stats = compute_stats(samples, sample_count);

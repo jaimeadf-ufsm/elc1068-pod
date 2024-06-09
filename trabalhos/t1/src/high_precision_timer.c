@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "common/high_precision_timer.h"
 
 #ifdef _WIN32
@@ -23,18 +25,18 @@
     Timer start_timer()
     {
         Timer timer;
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer.start);
+        gettimeofday(&timer.start, NULL);
 
         return timer;
     }
 
     void stop_timer(Timer *timer)
     {
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer->end);
+        gettimeofday(&timer->end, NULL);
     }
 
     double get_timer_nanoseconds(Timer *timer)
     {
-        return (timer->end.tv_sec - timer->start.tv_sec) * 1e9 + (timer->end.tv_nsec - timer->start.tv_nsec);
+        return (timer->end.tv_sec - timer->start.tv_sec) * 1e9 + (timer->end.tv_usec - timer->start.tv_usec) * 1e3;
     }
 #endif

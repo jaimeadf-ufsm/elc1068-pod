@@ -122,7 +122,8 @@ int write_number(BufferedWriter *writer, int number)
         characters++;
     }
 
-    for (int i = 1000000000; i > 0; i /= 10)
+    int i;
+    for (i = 1000000000; i > 0; i /= 10)
     {
         if (number >= i)
         {

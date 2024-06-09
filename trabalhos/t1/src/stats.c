@@ -24,8 +24,8 @@ int compare_samples(const void *a, const void *b)
 Stats compute_stats(double *samples, int n)
 {
     Stats stats;
-    stats.minimum = INFINITY;
-    stats.maximum = -INFINITY;
+    stats.minimum = HUGE_VAL;
+    stats.maximum = -HUGE_VAL;
     stats.average = 0;
     stats.median = 0;
     stats.standard_deviation = 0;
@@ -40,7 +40,9 @@ Stats compute_stats(double *samples, int n)
     stats.minimum = samples[0];
     stats.maximum = samples[n - 1];
 
-    for (int i = 0; i < n; i++)
+    int i;
+
+    for (i = 0; i < n; i++)
     {
         stats.average += samples[i];
     }
@@ -56,9 +58,11 @@ Stats compute_stats(double *samples, int n)
         stats.median = samples[n / 2];
     }
 
-    for (int i = 0; i < n; i++)
+    int j;
+
+    for (j = 0; j < n; j++)
     {
-        stats.standard_deviation += (samples[i] - stats.average) * (samples[i] - stats.average);
+        stats.standard_deviation += (samples[j] - stats.average) * (samples[j] - stats.average);
     }
 
     stats.standard_deviation = sqrt(stats.standard_deviation / n);

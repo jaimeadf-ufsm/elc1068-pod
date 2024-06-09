@@ -31,7 +31,9 @@ int read_run(BufferedReader *reader, int *array, int maximum_size)
 
 void write_run(BufferedWriter *writer, int *array, int size)
 {
-    for (int i = 0; i < size; i++)
+    int i;
+
+    for (i = 0; i < size; i++)
     {
         write_number(writer, array[i]);
     }
@@ -46,7 +48,9 @@ int create_runs(Run *runs, char *input_filename, int run_count, int run_size, So
     int *array = (int *)malloc(run_size * sizeof(int));
     int element_count = 0;
 
-    for (int i = 0; i < run_count; i++)
+    int i;
+
+    for (i = 0; i < run_count; i++)
     {
         sprintf(runs[i].filename, "%s/%06d.tmp", TMP_DIR, i);
 
@@ -107,7 +111,10 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     Heap heap = create_heap(run_count);
 
     fprintf(stderr, "DEBUG: creating initial nodes in heap...\n");
-    for (int i = 0; i < run_count; i++)
+
+    int i;
+
+    for (i = 0; i < run_count; i++)
     {
         run_readers[i] = open_reader(runs[i].filename, buffer_size);
 
@@ -161,9 +168,11 @@ void merge_runs(Run *runs, char *output_filename, int run_count, int element_cou
     close_writer(&output_writer);
     stop_timer(&timer);
 
-    for (int i = 0; i < run_count; i++)
+    int j;
+
+    for (j = 0; j < run_count; j++)
     {
-        close_reader(&run_readers[i]);
+        close_reader(&run_readers[j]);
     }
 
     fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_nanoseconds(&timer) / 1e9);
@@ -176,7 +185,9 @@ void clear_runs(Run *runs, int run_count)
 {
     fprintf(stderr, "DEBUG: clearing runs...\n");
 
-    for (int i = 0; i < run_count; i++)
+    int i;
+
+    for (i = 0; i < run_count; i++)
     {
         remove(runs[i].filename);
     }
