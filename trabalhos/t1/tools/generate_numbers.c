@@ -1,71 +1,54 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <ctype.h>
 #include <time.h>
+#include <math.h>
 
 #include "common/input.h"
 #include "common/buffered_io.h"
 
+#define PROGRESS_STEPS 20
 #define BUFFER_SIZE 16 * 1024
 
-bool is_size(char *str)
+int random_number(int modulo, bool sign)
 {
-    return isalpha(str[strlen(str) - 1]);
-}
+    int number = rand() % modulo;
 
-long long parse_size_or_exit(char *str)
-{
-    long long amount = parse_long_long_or_exit(str);
-    char unit = str[strlen(str) - 1];
-
-    switch (unit)
+    if (sign && rand() % 2 == 0)
     {
-    case 'K':
-        return amount * 1024;
-    case 'M':
-        return amount * 1024 * 1024;
-    case 'G':
-        return amount * 1024 * 1024 * 1024;
-    case 'B':
-        return amount;
-    default:
-        fprintf(stderr, "ERROR: invalid size unit \"%c\".\n", unit);
-        exit(1);
-    }
-}
-
-long long generate_random_numbers_by_count(BufferedWriter *writer, long long count, int modulo)
-{
-    for (long long i = 0; i < count; i++)
-    {
-        write_number(writer, rand() % modulo);
+        number = -number;
     }
 
-    return count;
+    return number;
 }
 
-long long generate_random_numbers_by_size(BufferedWriter *writer, long long size, int modulo)
+long long generate_random_numbers(BufferedWriter *writer, long long n, int modulo, bool sign)
 {
-    long long file_size = 0;
+    fprintf(stderr, "DEBUG: generating %lld numbers...\n", n);
+
+    long long step = n / PROGRESS_STEPS;
     long long count = 0;
 
-    while (file_size < size)
+    while (count < n)
     {
-        file_size += write_number(writer, rand() % modulo);
+        write_number(writer, random_number(modulo, sign));
+
         count++;
+
+        if (count % step == 0)
+        {
+            fprintf(stderr, "DEBUG: %lld numbers generated (%.2lf%%).\n", count, floor(count * 10000.0 / n) / 100.0);
+        }
     }
 
-    return count;
+    return n;
 }
 
 int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        fprintf(stderr, "Usage: %s <count/size> <filename> [modulo]\n", argv[0]);
+        fprintf(stderr, "Usage: %s <count/size> <filename> [modulo] [signed] [seed]\n", argv[0]);
         return 1;
     }
 
@@ -73,28 +56,42 @@ int main(int argc, char *argv[])
     char *filename = argv[2];
 
     int modulo = RAND_MAX;
+    bool sign = false;
+    int seed = time(NULL);
 
     if (argc >= 4)
     {
         modulo = parse_int_or_exit(argv[3]);
     }
 
-    srand(time(NULL));
+    if (argc >= 5)
+    {
+        sign = parse_bool_or_exit(argv[4]);
+    }
 
-    BufferedWriter writer = open_writer(filename, BUFFER_SIZE);
-    long long count = 0;
+    if (argc >= 6)
+    {
+        seed = parse_int_or_exit(argv[5]);
+    }
+
+    long long n = 0;
 
     if (is_size(amount))
     {
-        count = generate_random_numbers_by_size(&writer, parse_size_or_exit(amount), modulo);
+        n = parse_size_or_exit(amount) / sizeof(int);
     }
     else
     {
-        count = generate_random_numbers_by_count(&writer, parse_long_long_or_exit(amount), modulo);
+        n = parse_long_long_or_exit(amount);
     }
 
+    srand(seed);
+
+    BufferedWriter writer = open_writer(filename, BUFFER_SIZE);
+    generate_random_numbers(&writer, n, modulo, sign);
     close_writer(&writer);
-    fprintf(stderr, "DEBUG: generated %lld numbers.\n", count);
+
+    fprintf(stderr, "DEBUG: generated %lld numbers.\n", n);
 
     return 0;
 }

@@ -10,7 +10,7 @@
 
 typedef struct run Run;
 
-char *TMP_DIR = "tmp";
+char *TMP_DIR = "/home/emilia/tmp";
 
 struct run
 {
