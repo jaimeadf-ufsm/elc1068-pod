@@ -38,8 +38,8 @@ void close_reader(BufferedReader *reader)
 
 int read_number(BufferedReader *reader)
 {
-    int sign = 1;
-    int number = 0;
+    long long sign = 1;
+    long long number = 0;
 
     char c = read_char(reader);
 
@@ -61,7 +61,7 @@ int read_number(BufferedReader *reader)
         c = read_char(reader);
     } while (c != '\n');
 
-    return sign * number;
+    return (int)(sign * number);
 }
 
 char read_char(BufferedReader *reader)
@@ -111,36 +111,31 @@ void close_writer(BufferedWriter *writer)
     free(writer->buffer);
 }
 
-int write_number(BufferedWriter *writer, int number)
+void write_number(BufferedWriter *writer, int number)
 {
-    int characters = 1;
+    long long value = number;
 
     if (number < 0)
     {
         write_char(writer, '-');
-        number = -number;
-        characters++;
+        value = -value;
     }
 
-    int i;
+    long long i;
     for (i = 1000000000; i > 0; i /= 10)
     {
-        if (number >= i)
+        if (value >= i)
         {
-            write_char(writer, '0' + (number / i) % 10);
-            characters++;
+            write_char(writer, '0' + (value / i) % 10);
         }
     }
 
-    if (number == 0)
+    if (value == 0)
     {
         write_char(writer, '0');
-        characters++;
     }
 
     write_char(writer, '\n');
-
-    return characters;
 }
 
 void write_char(BufferedWriter *writer, char c)
