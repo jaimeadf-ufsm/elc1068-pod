@@ -1,122 +1,133 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 void radixsort(int *array, int size)
 {
-    int i, exp = 1;
-    int max = array[0];
-    int *output = (int *)malloc(size * sizeof(int));
+    int i;
+    int *temp_array;
+    int biggest_value;
+    int exp;
+    int bucket[19];
 
+    biggest_value = abs(array[0]);
     for (i = 1; i < size; i++)
-        if (array[i] > max)
-            max = array[i];
-
-    while (max / exp > 0)
     {
-        int bucket[10] = {0};
+        if (abs(array[i]) > biggest_value)
+            biggest_value = abs(array[i]);
+    }
+
+    temp_array = (int *)malloc(size * sizeof(int));
+
+    exp = 1;
+    while (biggest_value / exp > 0)
+    {
+        for (i = 0; i < 19; i++)
+            bucket[i] = 0;
 
         for (i = 0; i < size; i++)
-            bucket[(array[i] / exp) % 10]++;
+        {
+            int bucket_index;
+            if (array[i] < 0)
+                bucket_index = 9 - (abs(array[i]) / exp) % 10;
+            else
+                bucket_index = 10 + (array[i] / exp) % 10;
+            bucket[bucket_index]++;
+        }
 
-        for (i = 1; i < 10; i++)
+        for (i = 1; i < 19; i++)
             bucket[i] += bucket[i - 1];
 
         for (i = size - 1; i >= 0; i--)
-            output[--bucket[(array[i] / exp) % 10]] = array[i];
+        {
+            int bucket_index;
+            if (array[i] < 0)
+                bucket_index = 9 - (abs(array[i]) / exp) % 10;
+            else
+                bucket_index = 10 + (array[i] / exp) % 10;
+            temp_array[--bucket[bucket_index]] = array[i];
+        }
 
         for (i = 0; i < size; i++)
-            array[i] = output[i];
+            array[i] = temp_array[i];
 
         exp *= 10;
     }
 
-    free(output);
+    free(temp_array);
 }
 
 void merge(int *array, int left, int mid, int right)
 {
-    int i, j, k;
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
+    int left_index, right_index, merged_index;
+    int left_size = mid - left + 1;
+    int right_size = right - mid;
+    int *Left;
+    int *Right;
 
-    int *L = (int *)malloc(n1 * sizeof(int));
-    int *R = (int *)malloc(n2 * sizeof(int));
+    Left = (int *)malloc(left_size * sizeof(int));
+    Right = (int *)malloc(right_size * sizeof(int));
 
-    for (i = 0; i < n1; i++)
-        L[i] = array[left + i];
-    for (j = 0; j < n2; j++)
-        R[j] = array[mid + 1 + j];
+    for (left_index = 0; left_index < left_size; left_index++)
+        Left[left_index] = array[left + left_index];
+    for (right_index = 0; right_index < right_size; right_index++)
+        Right[right_index] = array[mid + 1 + right_index];
 
-    i = 0;
-    j = 0;
-    k = left;
-    while (i < n1 && j < n2)
+    left_index = 0;
+    right_index = 0;
+    merged_index = left;
+    while (left_index < left_size && right_index < right_size)
     {
-        if (L[i] <= R[j])
-            array[k] = L[i++];
+        if (Left[left_index] <= Right[right_index])
+        {
+            array[merged_index] = Left[left_index];
+            left_index++;
+        }
         else
-            array[k] = R[j++];
-        k++;
+        {
+            array[merged_index] = Right[right_index];
+            right_index++;
+        }
+        merged_index++;
     }
 
-    while (i < n1)
-        array[k++] = L[i++];
+    while (left_index < left_size)
+    {
+        array[merged_index] = Left[left_index];
+        left_index++;
+        merged_index++;
+    }
 
-    while (j < n2)
-        array[k++] = R[j++];
+    while (right_index < right_size)
+    {
+        array[merged_index] = Right[right_index];
+        right_index++;
+        merged_index++;
+    }
 
-    free(L);
-    free(R);
+    free(Left);
+    free(Right);
 }
 
 void mergix(int *array, int left, int right)
 {
     if (left < right)
     {
-        int mid = left + (right - left) / 2;
-        mergix(array, left, mid);
-        mergix(array, mid + 1, right);
-        merge(array, left, mid, right);
-    }
-}
+        int mid, n;
+        int max_size_for_radix = 10;
 
-void sortNegatives(int *array, int size)
-{
-    for (int i = 0; i < size; i++)
-        array[i] = -array[i];
-    radixsort(array, size);
-    for (int i = 0; i < size / 2; i++)
-    {
-        int temp = array[i];
-        array[i] = array[size - 1 - i];
-        array[size - 1 - i] = temp;
-    }
-    for (int i = 0; i < size; i++)
-        array[i] = -array[i];
-}
+        n = right - left + 1;
 
-void radixSortNegatives(int *array, int size)
-{
-    int positiveCount = 0, negativeCount = 0;
-    int *positives = (int *)malloc(size * sizeof(int));
-    int *negatives = (int *)malloc(size * sizeof(int));
-
-    for (int i = 0; i < size; i++)
-    {
-        if (array[i] >= 0)
-            positives[positiveCount++] = array[i];
+        if (n <= max_size_for_radix)
+        {
+            radixsort(array + left, n);
+        }
         else
-            negatives[negativeCount++] = array[i];
+        {
+            mid = left + (right - left) / 2;
+            mergix(array, left, mid);
+            mergix(array, mid + 1, right);
+            merge(array, left, mid, right);
+        }
     }
-
-    radixsortNegatives(positives, positiveCount);
-    sortNegatives(negatives, negativeCount);
-
-    for (int i = 0; i < negativeCount; i++)
-        array[i] = negatives[i];
-    for (int i = 0; i < positiveCount; i++)
-        array[negativeCount + i] = positives[i];
-
-    free(positives);
-    free(negatives);
 }
