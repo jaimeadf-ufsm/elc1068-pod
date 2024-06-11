@@ -37,10 +37,10 @@ double measure_quicksert(int *numbers, int n, int threshold)
 
 int main(int argc, char *argv[])
 {
-    if (argc < 3)
+    if (argc < 5)
     {
         fprintf(stderr, "Usage: %s <numbers_count> <samples_count> <threshold_min> <threshold_max> [seed]\n", argv[0]);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     int number_count = parse_int_or_exit(argv[1]);
