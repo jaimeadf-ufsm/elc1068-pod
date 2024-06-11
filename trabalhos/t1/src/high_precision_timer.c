@@ -6,7 +6,6 @@
     Timer start_timer()
     {
         Timer timer;
-        QueryPerformanceFrequency(&timer.frequency);
         QueryPerformanceCounter(&timer.start);
 
         return timer;
@@ -15,11 +14,17 @@
     void stop_timer(Timer *timer)
     {
         QueryPerformanceCounter(&timer->end);
+        QueryPerformanceFrequency(&timer->frequency);
     }
 
-    double get_timer_nanoseconds(Timer *timer)
+    double get_timer_units(Timer *timer)
     {
-        return (timer->end.QuadPart - timer->start.QuadPart) * 1e9 / timer->frequency.QuadPart;
+        return timer->end.QuadPart - timer->start.QuadPart;
+    }
+
+    double get_timer_seconds(Timer *timer)
+    {
+        return (double)(timer->end.QuadPart - timer->start.QuadPart) / timer->frequency.QuadPart;
     }
 #else
     Timer start_timer()
@@ -35,7 +40,12 @@
         gettimeofday(&timer->end, NULL);
     }
 
-    double get_timer_nanoseconds(Timer *timer)
+    double get_timer_units(Timer *timer)
+    {
+        return (timer->end.tv_sec - timer->start.tv_sec) * 1e6 + (timer->end.tv_usec - timer->start.tv_usec);
+    }
+
+    double get_timer_seconds(Timer *timer)
     {
         return (timer->end.tv_sec - timer->start.tv_sec) * 1e9 + (timer->end.tv_usec - timer->start.tv_usec) * 1e3;
     }

@@ -23,6 +23,7 @@ typedef struct timer Timer;
 Timer start_timer();
 void stop_timer(Timer *timer);
 
-double get_timer_nanoseconds(Timer *timer);
+double get_timer_units(Timer *timer);
+double get_timer_seconds(Timer *timer);
 
 #endif

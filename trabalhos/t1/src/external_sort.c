@@ -69,9 +69,9 @@ int create_runs(SortOptions *options, Run *runs)
 
         element_count += n;
 
-        double reading_seconds = get_timer_nanoseconds(&read_timer) / 1e9;
-        double sorting_seconds = get_timer_nanoseconds(&reading_timer) / 1e9;
-        double writing_seconds = get_timer_nanoseconds(&writing_timer) / 1e9;
+        double reading_seconds = get_timer_seconds(&read_timer);
+        double sorting_seconds = get_timer_seconds(&reading_timer);
+        double writing_seconds = get_timer_seconds(&writing_timer);
 
         fprintf(
             stderr,
@@ -173,7 +173,7 @@ void merge_runs(SortOptions *options, Run *runs, int element_count)
         close_reader(&run_readers[j]);
     }
 
-    fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_nanoseconds(&timer) / 1e9);
+    fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_seconds(&timer));
 
     free_heap(&heap);
     free(run_readers);

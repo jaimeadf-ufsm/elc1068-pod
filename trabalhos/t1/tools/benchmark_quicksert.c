@@ -23,7 +23,7 @@ double measure_quicksort(int *numbers, int n)
     quicksort(numbers, n);
     stop_timer(&timer);
 
-    return get_timer_nanoseconds(&timer) / 1e6; 
+    return get_timer_units(&timer); 
 }
 
 double measure_quicksert(int *numbers, int n, int threshold)
@@ -32,7 +32,7 @@ double measure_quicksert(int *numbers, int n, int threshold)
     quicksert(numbers, n, threshold);
     stop_timer(&timer);
 
-    return get_timer_nanoseconds(&timer) / 1e6;
+    return get_timer_units(&timer);
 }
 
 int main(int argc, char *argv[])
