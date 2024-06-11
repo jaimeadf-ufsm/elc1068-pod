@@ -24,7 +24,7 @@ void sort_with_quicksert(int *array, long long size)
 
 void sort_with_mergix(int *array, long long size)
 {
-    mergix(array, 0, size - 1);
+    mergix_call(array, size);
 }
 
 void sort_with_mergesort(int *array, long long size)

@@ -1,63 +1,47 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdbool.h>
+#include "common/mergix.h"
+
+#define MERGIN_THRESHOLD 40
 
 int get_max(int *array, int size)
 {
-    int max = abs(array[0]);
+    int mx = array[0];
     int i;
     for (i = 1; i < size; i++)
-    {
-        if (abs(array[i]) > max)
-            max = abs(array[i]);
-    }
-    return max;
+        if (array[i] > mx)
+            mx = array[i];
+    return mx;
 }
 
-void radixsort(int *array, int size)
+void radixsort(int *array, int n)
 {
-    if (size <= 0 || array == NULL)
+    int output[40];
+    int i, count[2];
+
+    int exp;
+    for (exp = 0; exp < 32; exp++)
     {
-        printf("Empty array or invalid size.\n");
-        return;
+        count[0] = 0;
+        count[1] = 0;
+
+        for (i = 0; i < n; i++)
+            count[(array[i] >> exp) & 1]++;
+
+        for (i = 1; i < 2; i++)
+            count[i] += count[i - 1];
+
+        for (i = n - 1; i >= 0; i--)
+        {
+            output[count[(array[i] >> exp) & 1] - 1] = array[i];
+            count[(array[i] >> exp) & 1]--;
+        }
+
+        for (i = 0; i < n; i++)
+            array[i] = output[i];
     }
-
-    int i;
-    int *tempArray;
-    int maxnumber = get_max(array, size);
-    int exp = 1;
-
-    tempArray = (int *)malloc(size * sizeof(int));
-
-    for (i = 0; i < size; i++)
-        tempArray[i] = 0;
-
-    if (tempArray == NULL)
-    {
-        printf("Failed to allocate memory for the temporary array.\n");
-        return;
-    }
-
-    while (maxnumber / exp > 0)
-    {
-        int bucket[20] = {0};
-
-        for (i = 0; i < size; i++)
-            bucket[(array[i] / exp) % 10 + 10]++;
-
-        for (i = 1; i < 20; i++)
-            bucket[i] += bucket[i - 1];
-
-        for (i = size - 1; i >= 0; i--)
-            tempArray[--bucket[(array[i] / exp) % 10 + 10]] = array[i];
-
-        for (i = 0; i < size; i++)
-            array[i] = tempArray[i];
-
-        exp *= 10;
-    }
-
-    free(tempArray);
 }
 
 void merge(int *array, int left, int mid, int right)
@@ -112,16 +96,40 @@ void merge(int *array, int left, int mid, int right)
     free(Right);
 }
 
+bool has_negative_values(int *array, int size)
+{
+    int i;
+    for (i = 0; i < size; i++)
+    {
+        if (array[i] < 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void mergix_call(int *array, int size)
+{
+    if (has_negative_values(array, size))
+    {
+        mergesort(array, 0, size - 1);
+    }
+    else
+    {
+        mergix(array, 0, size - 1);
+    }
+}
+
 void mergix(int *array, int left, int right)
 {
     if (left < right)
     {
         int mid, n;
-        int max_size_for_radix = 10;
 
         n = right - left + 1;
 
-        if (n <= max_size_for_radix)
+        if (n <= MERGIN_THRESHOLD)
         {
             radixsort(array + left, n);
         }

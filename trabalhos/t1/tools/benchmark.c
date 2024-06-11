@@ -6,6 +6,7 @@
 #include "common/quicksert.h"
 #include "common/input.h"
 #include "common/stats.h"
+#include "common/mergix.h"
 
 int compare(const void *a, const void *b)
 {
@@ -54,7 +55,7 @@ double measure_quicksort(int *array, long long n)
     quicksort(array, n);
     stop_timer(&timer);
 
-    return get_timer_units(&timer); 
+    return get_timer_units(&timer);
 }
 
 double measure_quicksert(int *array, long long n, long long threshold)
@@ -69,7 +70,7 @@ double measure_quicksert(int *array, long long n, long long threshold)
 double measure_mergix(int *array, long long n)
 {
     Timer timer = start_timer();
-    qsort(array, n, sizeof(int), compare);
+    mergix_call(array, n);
     stop_timer(&timer);
 
     return get_timer_units(&timer);
@@ -165,8 +166,7 @@ int main(int argc, char *argv[])
         fprintf(
             stderr,
             "Usage: %s <minimum_size> <maximum_size> <increment> <sequence_count> <sequence_type:(ascending, descending, random)> <algorithm_type:(quicksort, quicksert, mergix)> <output_filename> [verify] [sequence_parameter] [algorithm_parameter]\n",
-            argv[0]
-        );
+            argv[0]);
 
         return EXIT_FAILURE;
     }
@@ -215,9 +215,8 @@ int main(int argc, char *argv[])
         sequence_type,
         algorithm_type,
         sequence_parameter,
-        algorithm_parameter
-    );
-    
+        algorithm_parameter);
+
     int *sequences = (int *)malloc(maximum_size * sequence_count * sizeof(int));
     int *working_array = (int *)malloc(maximum_size * sizeof(int));
 
@@ -266,8 +265,7 @@ int main(int argc, char *argv[])
             stats.maximum,
             stats.average,
             stats.median,
-            stats.standard_deviation
-        );
+            stats.standard_deviation);
     }
 
     free(sequences);
