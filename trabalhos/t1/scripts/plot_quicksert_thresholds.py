@@ -14,12 +14,15 @@ with open(input_filename, 'r') as f:
 
 fig, ax = plt.subplots()
 
-ax.set_title('Vetor com 1e+06 elementos')
-ax.ticklabel_format(style='plain')
-ax.scatter(thresholds, averages,  s=0.1, label='Média dos tempos de execução')
+ax.set_title('10^6 elementos')
+
 ax.set_xlabel('Limiar')
 ax.set_ylabel('Tempo de execução (ciclos de clock)')
+
+ax.ticklabel_format(style='plain')
 ax.xaxis.set_ticks(np.arange(minimum_threshold, maximum_threshold + 1, 100))
+
+ax.scatter(thresholds, averages,  s=0.1, label='Média dos tempos de execução')
 
 print(np.argmin(averages))
 
