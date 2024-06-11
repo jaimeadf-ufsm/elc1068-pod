@@ -122,9 +122,9 @@ void generate_descending_sequences(int *sequences, long long sequence_count, lon
     }
 }
 
-void generate_random_sequences(int *sequences, long long sequence_count, long long sequence_size, long long seed)
+void generate_random_sequences(int *sequences, long long sequence_count, long long sequence_size, long long modulo)
 {
-    srand(seed);
+    srand(0);
 
     long long i, j;
 
@@ -132,7 +132,7 @@ void generate_random_sequences(int *sequences, long long sequence_count, long lo
     {
         for (j = 0; j < sequence_size; j++)
         {
-            sequences[i * sequence_size + j] = rand();
+            sequences[i * sequence_size + j] = modulo > 0 ? rand() % modulo : rand();
         }
     }
 }
