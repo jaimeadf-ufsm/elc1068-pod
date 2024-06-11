@@ -39,14 +39,13 @@ bool is_sorted(int *array, int *result, long long size)
     {
         if (result[i] != expected_result[i])
         {
-            free(expected_result);
-            return false;
+            break;
         }
     }
 
     free(expected_result);
 
-    return true;
+    return i == size;
 }
 
 double measure_quicksort(int *array, long long n)
@@ -247,13 +246,10 @@ int main(int argc, char *argv[])
                 fprintf(output_file, ",%lf", samples[i]);
             }
 
-            if (verify)
+            if (verify && !is_sorted(sequences + i * maximum_size, working_array, size))
             {
-                if (!is_sorted(sequences + i * maximum_size, working_array, size))
-                {
-                    fprintf(stderr, "ERROR: sequence is not sorted.\n");
-                    return EXIT_FAILURE;
-                }
+                fprintf(stderr, "ERROR: sequence is not sorted.\n");
+                return EXIT_FAILURE;
             }
         }
 
