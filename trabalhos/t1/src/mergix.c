@@ -2,59 +2,62 @@
 #include <stdio.h>
 #include <time.h>
 
-void radixsort(int *array, int size)
+int get_max(int *array, int size)
 {
+    int max = abs(array[0]);
     int i;
-    int *temp_array;
-    int biggest_value;
-    int exp;
-    int bucket[19];
-
-    biggest_value = abs(array[0]);
     for (i = 1; i < size; i++)
     {
-        if (abs(array[i]) > biggest_value)
-            biggest_value = abs(array[i]);
+        if (abs(array[i]) > max)
+            max = abs(array[i]);
+    }
+    return max;
+}
+
+void radixsort(int *array, int size)
+{
+    if (size <= 0 || array == NULL)
+    {
+        printf("Empty array or invalid size.\n");
+        return;
     }
 
-    temp_array = (int *)malloc(size * sizeof(int));
+    int i;
+    int *tempArray;
+    int maxnumber = get_max(array, size);
+    int exp = 1;
 
-    exp = 1;
-    while (biggest_value / exp > 0)
+    tempArray = (int *)malloc(size * sizeof(int));
+
+    for (i = 0; i < size; i++)
+        tempArray[i] = 0;
+
+    if (tempArray == NULL)
     {
-        for (i = 0; i < 19; i++)
-            bucket[i] = 0;
+        printf("Failed to allocate memory for the temporary array.\n");
+        return;
+    }
+
+    while (maxnumber / exp > 0)
+    {
+        int bucket[20] = {0};
 
         for (i = 0; i < size; i++)
-        {
-            int bucket_index;
-            if (array[i] < 0)
-                bucket_index = 9 - (abs(array[i]) / exp) % 10;
-            else
-                bucket_index = 10 + (array[i] / exp) % 10;
-            bucket[bucket_index]++;
-        }
+            bucket[(array[i] / exp) % 10 + 10]++;
 
-        for (i = 1; i < 19; i++)
+        for (i = 1; i < 20; i++)
             bucket[i] += bucket[i - 1];
 
         for (i = size - 1; i >= 0; i--)
-        {
-            int bucket_index;
-            if (array[i] < 0)
-                bucket_index = 9 - (abs(array[i]) / exp) % 10;
-            else
-                bucket_index = 10 + (array[i] / exp) % 10;
-            temp_array[--bucket[bucket_index]] = array[i];
-        }
+            tempArray[--bucket[(array[i] / exp) % 10 + 10]] = array[i];
 
         for (i = 0; i < size; i++)
-            array[i] = temp_array[i];
+            array[i] = tempArray[i];
 
         exp *= 10;
     }
 
-    free(temp_array);
+    free(tempArray);
 }
 
 void merge(int *array, int left, int mid, int right)
@@ -129,5 +132,16 @@ void mergix(int *array, int left, int right)
             mergix(array, mid + 1, right);
             merge(array, left, mid, right);
         }
+    }
+}
+
+void mergesort(int *array, int left, int right)
+{
+    if (left < right)
+    {
+        int mid = left + (right - left) / 2;
+        mergesort(array, left, mid);
+        mergesort(array, mid + 1, right);
+        merge(array, left, mid, right);
     }
 }

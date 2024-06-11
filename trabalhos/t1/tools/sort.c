@@ -27,6 +27,11 @@ void sort_with_mergix(int *array, int size)
     mergix(array, 0, size - 1);
 }
 
+void sort_with_mergesort(int *array, int size)
+{
+    mergesort(array, 0, size - 1);
+}
+
 SortFunction resolve_algorithm(char *argument)
 {
     if (strcmp(argument, "quicksort") == 0)
@@ -41,6 +46,10 @@ SortFunction resolve_algorithm(char *argument)
     {
         return sort_with_mergix;
     }
+    else if (strcmp(argument, "mergesort") == 0)
+    {
+        return sort_with_mergesort;
+    }
     else
     {
         fprintf(stderr, "ERROR: unknown algorithm: %s\n", argument);
@@ -52,7 +61,7 @@ int main(int argc, char **argv)
 {
     if (argc < 6)
     {
-        printf("Usage: %s <input_filename> <output_filename> <run_count> <run_size> <algorithm:(quicksort, quicksert, mergix)> [temporary_directory] [buffer_size]\n", argv[0]);
+        printf("Usage: %s <input_filename> <output_filename> <run_count> <run_size> <algorithm:(quicksort, quicksert, mergix, mergesort)> [temporary_directory] [buffer_size]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -77,6 +86,6 @@ int main(int argc, char **argv)
     }
 
     sort_files(&options);
-    
+
     return 0;
 }
