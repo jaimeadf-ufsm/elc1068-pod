@@ -47,6 +47,6 @@
 
     double get_timer_seconds(Timer *timer)
     {
-        return (timer->end.tv_sec - timer->start.tv_sec) * 1e9 + (timer->end.tv_usec - timer->start.tv_usec) * 1e3;
+        return timer->end.tv_sec - timer->start.tv_sec + (timer->end.tv_usec - timer->start.tv_usec) / 1e6;
     }
 #endif
