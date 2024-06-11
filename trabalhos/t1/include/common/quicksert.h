@@ -1,8 +1,8 @@
 #ifndef QUICKSERT_H
 #define QUICKSERT_H
 
-void insertionsort(int *array, int n);
-void quicksort(int *array, int n);
-void quicksert(int *array, int n, int threshold);
+void insertionsort(int *array, long long n);
+void quicksort(int *array, long long n);
+void quicksert(int *array, long long n, long long threshold);
 
 #endif

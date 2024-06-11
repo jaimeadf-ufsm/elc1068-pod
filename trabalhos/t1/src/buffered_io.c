@@ -10,7 +10,7 @@ void fill_reader_buffer(BufferedReader *reader)
     reader->index = 0;
 }
 
-BufferedReader open_reader(char *filename, int capacity)
+BufferedReader open_reader(char *filename, long long capacity)
 {
     BufferedReader reader;
     reader.file = fopen(filename, "r");
@@ -87,7 +87,7 @@ bool has_reader_ended(BufferedReader *reader)
     return reader->size == 0;
 }
 
-BufferedWriter open_writer(char *filename, int capacity)
+BufferedWriter open_writer(char *filename, long long capacity)
 {
     BufferedWriter writer;
     writer.file = fopen(filename, "w");

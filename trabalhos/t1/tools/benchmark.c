@@ -33,7 +33,7 @@ bool is_sorted(int *array, int *result, long long size)
     memcpy(expected_result, array, size * sizeof(int));
     qsort(expected_result, size, sizeof(int), compare);
 
-    int i;
+    long long i;
 
     for (i = 0; i < size; i++)
     {

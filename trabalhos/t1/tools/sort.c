@@ -12,22 +12,22 @@
 
 #define QUICKSERT_THRESHOLD 100
 
-void sort_with_quicksort(int *array, int size)
+void sort_with_quicksort(int *array, long long size)
 {
     quicksort(array, size);
 }
 
-void sort_with_quicksert(int *array, int size)
+void sort_with_quicksert(int *array, long long size)
 {
     quicksert(array, size, QUICKSERT_THRESHOLD);
 }
 
-void sort_with_mergix(int *array, int size)
+void sort_with_mergix(int *array, long long size)
 {
     mergix(array, 0, size - 1);
 }
 
-void sort_with_mergesort(int *array, int size)
+void sort_with_mergesort(int *array, long long size)
 {
     mergesort(array, 0, size - 1);
 }

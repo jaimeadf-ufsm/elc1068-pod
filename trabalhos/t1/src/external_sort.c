@@ -15,9 +15,9 @@ struct run
     char filename[256];
 };
 
-int read_run(BufferedReader *reader, int *array, int maximum_size)
+long long read_run(BufferedReader *reader, int *array, long long maximum_size)
 {
-    int n = 0;
+    long long n = 0;
 
     while (n < maximum_size && !has_reader_ended(reader))
     {
@@ -27,9 +27,9 @@ int read_run(BufferedReader *reader, int *array, int maximum_size)
     return n;
 }
 
-void write_run(BufferedWriter *writer, int *array, int size)
+void write_run(BufferedWriter *writer, int *array, long long size)
 {
-    int i;
+    long long i;
 
     for (i = 0; i < size; i++)
     {
@@ -44,18 +44,18 @@ int create_runs(SortOptions *options, Run *runs)
     BufferedReader input_reader = open_reader(options->input_filename, options->buffer_size);
 
     int *array = (int *)malloc(options->run_size * sizeof(int));
-    int element_count = 0;
+    long long element_count = 0;
 
-    int i;
+    long long i;
 
     for (i = 0; i < options->run_count; i++)
     {
-        sprintf(runs[i].filename, "%s/%06d.tmp", options->tmp_directory, i);
+        sprintf(runs[i].filename, "%s/%06lld.tmp", options->tmp_directory, i);
 
         BufferedWriter run_writer = open_writer(runs[i].filename, options->buffer_size);
 
         Timer read_timer = start_timer();
-        int n = read_run(&input_reader, array, options->run_size);
+        long long n = read_run(&input_reader, array, options->run_size);
         stop_timer(&read_timer);
 
         Timer reading_timer = start_timer();
@@ -75,7 +75,7 @@ int create_runs(SortOptions *options, Run *runs)
 
         fprintf(
             stderr,
-            "DEBUG: created run %d with %d elements in %.2lfs (reading: %.2lfs, sorting: %.2lfs, writing: %.2lfs).\n",
+            "DEBUG: created run %lld with %lld elements in %.2lfs (reading: %.2lfs, sorting: %.2lfs, writing: %.2lfs).\n",
             i,
             n,
             reading_seconds + sorting_seconds + writing_seconds,
@@ -88,12 +88,12 @@ int create_runs(SortOptions *options, Run *runs)
     close_reader(&input_reader);
     free(array);
 
-    fprintf(stderr, "DEBUG: created %d runs with %d elements.\n", options->run_count, element_count);
+    fprintf(stderr, "DEBUG: created %lld runs with %lld elements.\n", options->run_count, element_count);
 
     return element_count;
 }
 
-void merge_runs(SortOptions *options, Run *runs, int element_count)
+void merge_runs(SortOptions *options, Run *runs, long long element_count)
 {
     fprintf(stderr, "DEBUG: merging runs...\n");
 
@@ -110,7 +110,7 @@ void merge_runs(SortOptions *options, Run *runs, int element_count)
 
     fprintf(stderr, "DEBUG: creating initial nodes in heap...\n");
 
-    int i;
+    long long i;
 
     for (i = 0; i < options->run_count; i++)
     {
@@ -126,8 +126,8 @@ void merge_runs(SortOptions *options, Run *runs, int element_count)
         }
     }
 
-    int merged_count = 0;
-    int merged_step = element_count / 20;
+    long long merged_count = 0;
+    long long merged_step = element_count / 20;
 
     if (merged_step == 0)
     {
@@ -159,21 +159,21 @@ void merge_runs(SortOptions *options, Run *runs, int element_count)
 
         if (merged_count % merged_step == 0)
         {
-            fprintf(stderr, "DEBUG: %d elements merged (%.2lf%%).\n", merged_count, floor(merged_count * 10000.0 / element_count) / 100.0);
+            fprintf(stderr, "DEBUG: %lld elements merged (%.2lf%%).\n", merged_count, floor(merged_count * 10000.0 / element_count) / 100.0);
         }
     }
 
     close_writer(&output_writer);
     stop_timer(&timer);
 
-    int j;
+    long long j;
 
     for (j = 0; j < options->run_count; j++)
     {
         close_reader(&run_readers[j]);
     }
 
-    fprintf(stderr, "DEBUG: %d elements merged in %.2fs.\n", merged_count, get_timer_seconds(&timer));
+    fprintf(stderr, "DEBUG: %lld elements merged in %.2fs.\n", merged_count, get_timer_seconds(&timer));
 
     free_heap(&heap);
     free(run_readers);
@@ -183,7 +183,7 @@ void clear_runs(SortOptions *options, Run *runs)
 {
     fprintf(stderr, "DEBUG: clearing runs...\n");
 
-    int i;
+    long long i;
 
     for (i = 0; i < options->run_count; i++)
     {
@@ -195,7 +195,7 @@ void sort_files(SortOptions *options)
 {
     Run *runs = (Run *)malloc(options->run_count * sizeof(Run));
 
-    int element_count = create_runs(options, runs);
+    long long element_count = create_runs(options, runs);
 
     merge_runs(options, runs, element_count);
     clear_runs(options, runs);
