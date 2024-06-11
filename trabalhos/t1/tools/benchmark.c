@@ -26,27 +26,28 @@ int compare(const void *a, const void *b)
     }
 }
 
-bool is_sorted(int *array, int *result, long long size)
+void ensure_sorted(int *array, int *result, long long size)
 {
     int *expected_result = (int *)malloc(size * sizeof(int));
 
     memcpy(expected_result, array, size * sizeof(int));
     qsort(expected_result, size, sizeof(int), compare);
 
-    int i;
+    long long i;
 
     for (i = 0; i < size; i++)
     {
         if (result[i] != expected_result[i])
         {
-            free(expected_result);
-            return false;
+            break;
         }
     }
 
-    free(expected_result);
-
-    return true;
+    if (i != size)
+    {
+        fprintf(stderr, "ERROR: array is not sorted.\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 double measure_quicksort(int *array, long long n)
@@ -249,11 +250,7 @@ int main(int argc, char *argv[])
 
             if (verify)
             {
-                if (!is_sorted(sequences + i * maximum_size, working_array, size))
-                {
-                    fprintf(stderr, "ERROR: sequence is not sorted.\n");
-                    return EXIT_FAILURE;
-                }
+                ensure_sorted(working_array, sequences + i * maximum_size, size);                
             }
         }
 
