@@ -29,6 +29,11 @@ long long generate_random_numbers(BufferedWriter *writer, long long n, int modul
     long long step = n / PROGRESS_STEPS;
     long long count = 0;
 
+    if (step == 0)
+    {
+        step = 1;
+    }
+
     while (count < n)
     {
         write_number(writer, random_number(modulo, sign));
@@ -48,7 +53,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        fprintf(stderr, "Usage: %s <count/size> <filename> [modulo] [signed] [seed]\n", argv[0]);
+        fprintf(stderr, "Usage: %s <count/size> <filename> [signed] [modulo] [seed]\n", argv[0]);
         return 1;
     }
 
@@ -61,12 +66,13 @@ int main(int argc, char *argv[])
 
     if (argc >= 4)
     {
-        modulo = parse_int_or_exit(argv[3]);
+        sign = parse_bool_or_exit(argv[3]);
     }
 
     if (argc >= 5)
     {
-        sign = parse_bool_or_exit(argv[4]);
+
+        modulo = parse_int_or_exit(argv[4]);
     }
 
     if (argc >= 6)
