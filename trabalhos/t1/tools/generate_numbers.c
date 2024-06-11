@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
     char *amount = argv[1];
     char *filename = argv[2];
 
-    int modulo = RAND_MAX;
     bool sign = false;
+    int modulo = RAND_MAX;
     int seed = time(NULL);
 
     if (argc >= 4)
