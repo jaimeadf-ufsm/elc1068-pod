@@ -65,13 +65,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "DEBUG: generating random numbers...\n");
 
     srand(seed);
-
-    int i;
-
-    for (i = 0; i < sample_count; i++)
-    {
-        generate_random_numbers(datasets + i * number_count, number_count);
-    }
+    generate_random_numbers(datasets, sample_count * number_count);
 
     int threshold;
 
@@ -90,6 +84,14 @@ int main(int argc, char *argv[])
 
         fprintf(output_file, "\n");
     }
+
+    if (output_file != stdout)
+    {
+        fclose(output_file);
+    }
+
+    free(datasets);
+    free(playground);
 
     return 0;
 }
