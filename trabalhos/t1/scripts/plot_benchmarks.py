@@ -6,10 +6,10 @@ maximum_size = 10000000
 
 increment = 100000
 
-quicksort_filename = 'data/quicksort_random_benchmarks.txt'
-mergesort_filename = 'data/mergesort_random_benchmarks.txt'
-quicksert_filename = 'data/quicksert_random_benchmarks.txt'
-mergix_filename = 'data/mergix_random_benchmarks.txt'
+quicksort_filename = 'data/quicksort_descending_benchmarks.txt'
+mergesort_filename = 'data/mergesort_descending_benchmarks.txt'
+quicksert_filename = 'data/quicksert_descending_benchmarks.txt'
+mergix_filename = 'data/mergix_descending_benchmarks.txt'
 
 sizes = np.arange(minimum_size, maximum_size + 1, increment)
 
@@ -23,7 +23,7 @@ def compute_benchmark_averages(benchmark_filename):
 
 fig, ax = plt.subplots(1, 1, figsize=(8, 5))
 
-ax.set_title('Vetor aleatório')
+ax.set_title('Vetor ordenado decrescentemente')
 ax.set_xlabel('Tamanho (10^5 elementos)')
 ax.set_ylabel('Tempo de execução (ciclos de clock)')
 
