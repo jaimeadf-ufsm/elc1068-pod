@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "common/mergix.h"
 
-#define MERGIN_THRESHOLD 40
+#define MERGIX_THRESHOLD 97
 
 int get_max(int *array, int size)
 {
@@ -18,30 +18,32 @@ int get_max(int *array, int size)
 
 void radixsort(int *array, int n)
 {
-    int output[40];
-    int i, count[2];
+    int *output = (int *)malloc(n * sizeof(int));
+    int count[256] = {0};
+    int exp, i;
 
-    int exp;
-    for (exp = 0; exp < 32; exp++)
+    for (exp = 0; exp < 32; exp += 8)
     {
-        count[0] = 0;
-        count[1] = 0;
+        for (i = 0; i < 256; i++)
+            count[i] = 0;
 
         for (i = 0; i < n; i++)
-            count[(array[i] >> exp) & 1]++;
+            count[(array[i] >> exp) & 0xFF]++;
 
-        for (i = 1; i < 2; i++)
+        for (i = 1; i < 256; i++)
             count[i] += count[i - 1];
 
         for (i = n - 1; i >= 0; i--)
         {
-            output[count[(array[i] >> exp) & 1] - 1] = array[i];
-            count[(array[i] >> exp) & 1]--;
+            output[count[(array[i] >> exp) & 0xFF] - 1] = array[i];
+            count[(array[i] >> exp) & 0xFF]--;
         }
 
         for (i = 0; i < n; i++)
             array[i] = output[i];
     }
+
+    free(output);
 }
 
 void merge(int *array, int left, int mid, int right)
@@ -129,7 +131,7 @@ void mergix(int *array, int left, int right)
 
         n = right - left + 1;
 
-        if (n <= MERGIN_THRESHOLD)
+        if (n <= MERGIX_THRESHOLD)
         {
             radixsort(array + left, n);
         }
@@ -141,6 +143,11 @@ void mergix(int *array, int left, int right)
             merge(array, left, mid, right);
         }
     }
+}
+
+void mergesort_call(int *array, int size)
+{
+    mergesort(array, 0, size - 1);
 }
 
 void mergesort(int *array, int left, int right)
