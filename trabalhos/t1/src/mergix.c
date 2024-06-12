@@ -4,103 +4,9 @@
 #include <stdbool.h>
 #include "common/mergix.h"
 
-#define MERGIX_THRESHOLD 97
-
-int get_max(int *array, int size)
+bool has_negative_values(int *array, long long size)
 {
-    int mx = array[0];
-    int i;
-    for (i = 1; i < size; i++)
-        if (array[i] > mx)
-            mx = array[i];
-    return mx;
-}
-
-void radixsort(int *array, int n)
-{
-    int *output = (int *)malloc(n * sizeof(int));
-    int count[256] = {0};
-    int exp, i;
-
-    for (exp = 0; exp < 32; exp += 8)
-    {
-        for (i = 0; i < 256; i++)
-            count[i] = 0;
-
-        for (i = 0; i < n; i++)
-            count[(array[i] >> exp) & 0xFF]++;
-
-        for (i = 1; i < 256; i++)
-            count[i] += count[i - 1];
-
-        for (i = n - 1; i >= 0; i--)
-        {
-            output[count[(array[i] >> exp) & 0xFF] - 1] = array[i];
-            count[(array[i] >> exp) & 0xFF]--;
-        }
-
-        for (i = 0; i < n; i++)
-            array[i] = output[i];
-    }
-
-    free(output);
-}
-
-void merge(int *array, int left, int mid, int right)
-{
-    int left_index, right_index, merged_index;
-    int left_size = mid - left + 1;
-    int right_size = right - mid;
-    int *Left;
-    int *Right;
-
-    Left = (int *)malloc(left_size * sizeof(int));
-    Right = (int *)malloc(right_size * sizeof(int));
-
-    for (left_index = 0; left_index < left_size; left_index++)
-        Left[left_index] = array[left + left_index];
-    for (right_index = 0; right_index < right_size; right_index++)
-        Right[right_index] = array[mid + 1 + right_index];
-
-    left_index = 0;
-    right_index = 0;
-    merged_index = left;
-    while (left_index < left_size && right_index < right_size)
-    {
-        if (Left[left_index] <= Right[right_index])
-        {
-            array[merged_index] = Left[left_index];
-            left_index++;
-        }
-        else
-        {
-            array[merged_index] = Right[right_index];
-            right_index++;
-        }
-        merged_index++;
-    }
-
-    while (left_index < left_size)
-    {
-        array[merged_index] = Left[left_index];
-        left_index++;
-        merged_index++;
-    }
-
-    while (right_index < right_size)
-    {
-        array[merged_index] = Right[right_index];
-        right_index++;
-        merged_index++;
-    }
-
-    free(Left);
-    free(Right);
-}
-
-bool has_negative_values(int *array, int size)
-{
-    int i;
+    long long i;
     for (i = 0; i < size; i++)
     {
         if (array[i] < 0)
@@ -108,55 +14,154 @@ bool has_negative_values(int *array, int size)
             return true;
         }
     }
+
     return false;
 }
 
-void mergix_call(int *array, int size)
+void radixsort(int *array, long long n)
 {
-    if (has_negative_values(array, size))
+    int *output = (int *)malloc(n * sizeof(int));
+    int count[256] = {0};
+
+    int shift;
+
+    for (shift = 0; shift < 32; shift += 8)
     {
-        mergesort(array, 0, size - 1);
+        int i;
+
+        for (i = 0; i < 256; i++)
+        {
+            count[i] = 0;
+        }
+
+        for (i = 0; i < n; i++)
+        {
+            count[(array[i] >> shift) & 0xFF]++;
+        }
+
+        for (i = 1; i < 256; i++)
+        {
+            count[i] += count[i - 1];
+        }
+
+        for (i = n - 1; i >= 0; i--)
+        {
+            output[count[(array[i] >> shift) & 0xFF] - 1] = array[i];
+            count[(array[i] >> shift) & 0xFF]--;
+        }
+
+        for (i = 0; i < n; i++)
+        {
+            array[i] = output[i];
+        }
     }
-    else
-    {
-        mergix(array, 0, size - 1);
-    }
+
+    free(output);
 }
 
-void mergix(int *array, int left, int right)
+void merge(int *array, long long left, long long mid, long long right)
+{
+    long long left_index, right_index, merged_index;
+    long long left_size = mid - left + 1;
+    long long right_size = right - mid;
+
+    int *left_array = (int *)malloc(left_size * sizeof(int));
+    int *right_array = (int *)malloc(right_size * sizeof(int));
+
+    for (left_index = 0; left_index < left_size; left_index++)
+    {
+        left_array[left_index] = array[left + left_index];
+    }
+
+    for (right_index = 0; right_index < right_size; right_index++)
+    {
+        right_array[right_index] = array[mid + 1 + right_index];
+    }
+
+    left_index = 0;
+    right_index = 0;
+    merged_index = left;
+
+    while (left_index < left_size && right_index < right_size)
+    {
+        if (left_array[left_index] <= right_array[right_index])
+        {
+            array[merged_index] = left_array[left_index];
+            left_index++;
+        }
+        else
+        {
+            array[merged_index] = right_array[right_index];
+            right_index++;
+        }
+
+        merged_index++;
+    }
+
+    while (left_index < left_size)
+    {
+        array[merged_index] = left_array[left_index];
+        left_index++;
+        merged_index++;
+    }
+
+    while (right_index < right_size)
+    {
+        array[merged_index] = right_array[right_index];
+        right_index++;
+        merged_index++;
+    }
+
+    free(left_array);
+    free(right_array);
+}
+
+void mergesort_recursion(int *array, long long left, long long right)
 {
     if (left < right)
     {
-        int mid, n;
+        int mid = left + (right - left) / 2;
+        mergesort_recursion(array, left, mid);
+        mergesort_recursion(array, mid + 1, right);
+        merge(array, left, mid, right);
+    }
+}
+
+void mergesort(int *array, long long size)
+{
+    mergesort_recursion(array, 0, size - 1);
+}
+
+void mergix_recursion(int *array, long long left, long long right, long long threshold)
+{
+    if (left < right)
+    {
+        long long mid, n;
 
         n = right - left + 1;
 
-        if (n <= MERGIX_THRESHOLD)
+        if (n <= threshold)
         {
             radixsort(array + left, n);
         }
         else
         {
             mid = left + (right - left) / 2;
-            mergix(array, left, mid);
-            mergix(array, mid + 1, right);
+            mergix_recursion(array, left, mid, threshold);
+            mergix_recursion(array, mid + 1, right, threshold);
             merge(array, left, mid, right);
         }
     }
 }
 
-void mergesort_call(int *array, int size)
+void mergix(int *array, long long size, long long threshold)
 {
-    mergesort(array, 0, size - 1);
-}
-
-void mergesort(int *array, int left, int right)
-{
-    if (left < right)
+    if (has_negative_values(array, size))
     {
-        int mid = left + (right - left) / 2;
-        mergesort(array, left, mid);
-        mergesort(array, mid + 1, right);
-        merge(array, left, mid, right);
+        mergesort_recursion(array, 0, size - 1);
+    }
+    else
+    {
+        mergix_recursion(array, 0, size - 1, threshold);
     }
 }

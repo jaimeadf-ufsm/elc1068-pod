@@ -58,6 +58,15 @@ double measure_quicksort(int *array, long long n)
     return get_timer_units(&timer);
 }
 
+double measure_mergesort(int *array, long long n)
+{
+    Timer timer = start_timer();
+    mergesort(array, n);
+    stop_timer(&timer);
+
+    return get_timer_units(&timer);
+}
+
 double measure_quicksert(int *array, long long n, long long threshold)
 {
     Timer timer = start_timer();
@@ -67,10 +76,10 @@ double measure_quicksert(int *array, long long n, long long threshold)
     return get_timer_units(&timer);
 }
 
-double measure_mergix(int *array, long long n)
+double measure_mergix(int *array, long long n, long long threshold)
 {
     Timer timer = start_timer();
-    mergix_call(array, n);
+    mergix(array, n, threshold);
     stop_timer(&timer);
 
     return get_timer_units(&timer);
@@ -82,13 +91,17 @@ double measure_algorithm(int *playground, long long size, char *algorithm_type, 
     {
         return measure_quicksort(playground, size);
     }
+    else if (strcmp(algorithm_type, "mergesort") == 0)
+    {
+        return measure_mergesort(playground, size);
+    }
     else if (strcmp(algorithm_type, "quicksert") == 0)
     {
         return measure_quicksert(playground, size, parameter);
     }
     else if (strcmp(algorithm_type, "mergix") == 0)
     {
-        return measure_mergix(playground, size);
+        return measure_mergix(playground, size, parameter);
     }
     else
     {
@@ -161,11 +174,11 @@ void generate_sequences(int *sequences, long long sequence_count, long long sequ
 
 int main(int argc, char *argv[])
 {
-    if (argc < 7)
+    if (argc < 8)
     {
         fprintf(
             stderr,
-            "Usage: %s <minimum_size> <maximum_size> <increment> <sequence_count> <sequence_type:(ascending, descending, random)> <algorithm_type:(quicksort, quicksert, mergix)> <output_filename> [verify] [sequence_parameter] [algorithm_parameter]\n",
+            "Usage: %s <minimum_size> <maximum_size> <increment> <sequence_count> <sequence_type:(ascending, descending, random)> <algorithm_type:(quicksort, mergesort, quicksert, mergix)> <output_filename> [verify] [sequence_parameter] [algorithm_parameter]\n",
             argv[0]);
 
         return EXIT_FAILURE;
