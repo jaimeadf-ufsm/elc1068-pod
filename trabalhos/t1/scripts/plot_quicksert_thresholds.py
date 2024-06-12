@@ -12,7 +12,7 @@ with open(input_filename, 'r') as f:
     samples = np.array(list(map(lambda line: np.array(list(map(float, line.split(',')))), lines[1:])))
     averages = np.array(list(map(lambda s : np.average(s, axis=0), samples)))
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(1, 1, figsize=(8, 5))
 
 ax.set_title('10^6 elementos')
 
