@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/company.h"
 #include "common/lz78.h"
 
 #define CHUNK_SIZE 4096
