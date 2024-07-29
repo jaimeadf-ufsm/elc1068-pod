@@ -12,6 +12,12 @@ Buffer read_file_to_buffer(char *filename)
 
     FILE *file = fopen(filename, "rb");
 
+    if (file == NULL)
+    {
+        fprintf(stderr, "ERRO: não foi possível abrir o arquivo \"%s\" para leitura.\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
     char chunk[CHUNK_SIZE];
     size_t bytes;
 
@@ -28,6 +34,12 @@ Buffer read_file_to_buffer(char *filename)
 void write_buffer_to_file(Buffer *buffer, char *filename)
 {
     FILE *file = fopen(filename, "wb");
+
+    if (file == NULL)
+    {
+        fprintf(stderr, "ERRO: não foi possível abrir o arquivo \"%s\" para escrita.\n", filename);
+        exit(EXIT_FAILURE);
+    }
 
     fwrite(buffer_data(buffer), 1, buffer_size(buffer), file);
     fclose(file);
@@ -65,7 +77,7 @@ int main(int argc, char *argv[])
     {
         printf("Uso:\n");
         printf("    %s C <entrada.EMPRECSV> <saida.wd41>\n", argv[0]);
-        printf("    %s D <arquivo.wd41> <saida.EMPRECSV>\n", argv[0]);
+        printf("    %s D <entrada.wd41> <saida.EMPRECSV>\n", argv[0]);
 
         return EXIT_FAILURE;
     }

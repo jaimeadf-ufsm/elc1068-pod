@@ -13,6 +13,14 @@ typedef struct compressor_entry CompressorEntry;
 typedef struct decompressor_entry DecompressorEntry;
 typedef struct ht HT;
 
+void mark_progress(size_t position, size_t total)
+{
+    if (position % MB_BYTES == 0)
+    {
+        fprintf(stderr, "DEBUG: [LZ78] %zuMB/%zuMB concluído.\n", position / MB_BYTES, total / MB_BYTES);
+    }
+}
+
 struct compressor_entry
 {
     uint32_t parent_index;
@@ -100,7 +108,10 @@ uint32_t ht_search(HT *table, uint32_t parent_index, char child_value)
 {
     size_t index = ht_hash(table, parent_index, child_value);
 
-    while (table->entries[index].child_index && (table->entries[index].parent_index != parent_index || table->entries[index].child_value != child_value))
+    while (table->entries[index].child_index && (
+        table->entries[index].parent_index != parent_index ||
+        table->entries[index].child_value != child_value)
+    )
     {
         index = (index + 1) % table->capacity;
     }
@@ -138,10 +149,7 @@ void lz78_compress(Buffer *input_buffer, Buffer *output_buffer)
             parent_index = search_index;
             search_index = ht_search(&table, parent_index, input_buffer->data[position++]);
 
-            if (position % MB_BYTES == 0)
-            {
-                fprintf(stderr, "DEBUG: [LZ78] comprimido %zuMB.\n", position / MB_BYTES);
-            }
+            mark_progress(position, input_buffer->size);
         } while (search_index && position < input_buffer->size);
 
         char symbol = input_buffer->data[position - 1];
@@ -186,15 +194,12 @@ void lz78_decompress(Buffer *input_buffer, Buffer *output_buffer)
         for (byte_shift = 0; table_size >> byte_shift; byte_shift += 8)
         {
             parent_index |= (input_buffer->data[position++] & 0xFF) << byte_shift;
-
-            if (position % MB_BYTES == 0)
-            {
-                fprintf(stderr, "DEBUG: [LZ78] descomprimido %zuMB.\n", position / MB_BYTES);
-            }
+            mark_progress(position, input_buffer->size);
         }
 
         char symbol = input_buffer->data[position++];
 
+        mark_progress(position, input_buffer->size);
         buffer_write_char(&temporary_buffer, symbol);
 
         for (search_index = parent_index; search_index; search_index = table[search_index].parent_index)

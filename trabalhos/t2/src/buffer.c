@@ -39,6 +39,12 @@ void buffer_ensure_capacity(Buffer *buffer, size_t size)
     }
 
     buffer->data = (char *)realloc(buffer->data, buffer->capacity);
+
+    if (buffer->data == NULL)
+    {
+        fprintf(stderr, "ERRO: não foi possível realocar memória para o buffer.\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void buffer_write_array(Buffer *buffer, const char *data, size_t length)
