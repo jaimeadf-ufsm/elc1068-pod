@@ -86,7 +86,7 @@ void ht_insert(HT *table, uint32_t parent_index, uint32_t child_index, char chil
 
     while (table->entries[index].child_index)
     {
-        index++;
+        index = (index + 1) % table->capacity;
     }
 
     table->entries[index].parent_index = parent_index;
