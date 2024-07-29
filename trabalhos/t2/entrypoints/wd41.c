@@ -2,30 +2,62 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/zip.h"
+#include "common/company.h"
+#include "common/lz78.h"
 
-#define ENTRY_FILENAME "data.EMPRECSV"
+#define CHUNK_SIZE 4096
+
+Buffer read_file_to_buffer(char *filename)
+{
+    Buffer buffer = buffer_create();
+
+    FILE *file = fopen(filename, "rb");
+
+    char chunk[CHUNK_SIZE];
+    size_t bytes;
+
+    while ((bytes = fread(chunk, 1, sizeof(chunk), file)) > 0)
+    {
+        buffer_write_array(&buffer, chunk, bytes);
+    }
+
+    fclose(file);
+
+    return buffer;
+}
+
+void write_buffer_to_file(Buffer *buffer, char *filename)
+{
+    FILE *file = fopen(filename, "wb");
+
+    fwrite(buffer_data(buffer), 1, buffer_size(buffer), file);
+    fclose(file);
+}
 
 void compress(char *decompressed_filename, char *compressed_filename)
 {
-    struct zip_t *zip = zip_open(compressed_filename, ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
+    Buffer input_buffer = read_file_to_buffer(decompressed_filename);
+    Buffer output_buffer = buffer_create();
 
-    zip_entry_open(zip, ENTRY_FILENAME);
-    zip_entry_fwrite(zip, decompressed_filename);
-    zip_entry_close(zip);
+    lz78_compress(&input_buffer, &output_buffer);
 
-    zip_close(zip);
+    write_buffer_to_file(&output_buffer, compressed_filename);
+
+    buffer_free(&input_buffer);
+    buffer_free(&output_buffer);
 }
 
 void decompress(char *compressed_filename, char *decompressed_filename)
 {
-    struct zip_t *zip = zip_open(compressed_filename, 0, 'r');
+    Buffer input_buffer = read_file_to_buffer(compressed_filename);
+    Buffer output_buffer = buffer_create();
 
-    zip_entry_open(zip, ENTRY_FILENAME);
-    zip_entry_fread(zip, decompressed_filename);
-    zip_entry_close(zip);
+    lz78_decompress(&input_buffer, &output_buffer);
 
-    zip_close(zip);
+    write_buffer_to_file(&output_buffer, decompressed_filename);
+
+    buffer_free(&input_buffer);
+    buffer_free(&output_buffer);
 }
 
 int main(int argc, char *argv[])
@@ -55,6 +87,5 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     
-
     return 0;
 }
