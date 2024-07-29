@@ -6,7 +6,7 @@
 
 Company *company_read(const char *filename)
 {
-    CSV csv = csv_open(filename);
+    CSV csv = csv_open(filename, ';', '"');
     
     Company *head = NULL;
     Company *tail = NULL;

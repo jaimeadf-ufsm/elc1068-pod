@@ -2,9 +2,7 @@
 
 #include "common/csv.h"
 
-#define DELIMITER ';'
-
-CSV csv_open(const char *filename)
+CSV csv_open(const char *filename, char delimiter, char quote)
 {
     CSV csv;
     csv.file = fopen(filename, "r");
@@ -16,8 +14,12 @@ CSV csv_open(const char *filename)
     }
     
     csv.line = NULL;
+    csv.field = NULL;
+
+    csv.delimiter = delimiter;
+    csv.quote = quote;
+
     csv.line_capacity = 0;
-    csv.line_position = 0;
 
     return csv;
 }
@@ -40,6 +42,7 @@ bool csv_next_record(CSV *csv)
     }
 
     csv->line_position = 0;
+    csv->field = realloc(csv->field, csv->line_capacity);
 
     return true;
 }
@@ -56,14 +59,57 @@ char *csv_next_field(CSV *csv)
         return NULL;
     }
 
-    char *field = &csv->line[csv->line_position];
+    size_t field_position = 0;
+    bool quoted = false;
 
-    while (csv->line[csv->line_position] != DELIMITER && csv->line[csv->line_position] != '\n')
+    while (true)
     {
-        csv->line_position++;
+        if (quoted)
+        {
+            if (csv->line[csv->line_position] == csv->quote)
+            {
+                csv->line_position++;
+
+                if (csv->line[csv->line_position] == csv->quote)
+                {
+                    csv->field[field_position++] = csv->quote;
+                    csv->line_position++;
+                }
+                else
+                {
+                    quoted = false;
+                }
+
+                continue;
+            }
+
+            if (csv->line[csv->line_position] == '\0')
+            {
+                printf("ERRO: fim de linha inesperado ao tentar ler campo do CSV: %s.\n", csv->line);
+            }
+
+            csv->field[field_position++] = csv->line[csv->line_position++];
+
+            continue;
+        }
+
+        if (csv->line[csv->line_position] == csv->delimiter || csv->line[csv->line_position] == '\n')
+        {
+            csv->line_position++;
+            break;
+        }
+
+        if (csv->line[csv->line_position] == csv->quote)
+        {
+            quoted = true;
+            csv->line_position++;
+            continue;
+        }
+
+        csv->field[field_position++] = csv->line[csv->line_position++];
     }
 
-    csv->line[csv->line_position++] = '\0';
+    csv->field[field_position] = '\0';
 
-    return field;
+    return csv->field;
 }

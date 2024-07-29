@@ -34,15 +34,13 @@ int main(int argc, char *argv[])
     Index index_name = index_create(companies, make_name_key);
 
     printf("\n");
-    printf("Digite cpnj \"<cpnj>\" ou nome \"<razão social>\" para buscar uma empresa.\n");
-    printf("Digite exit para sair.\n");
-    printf("\n");
-    printf("OBS: A chave a ser buscada deve estar entre aspas duplas.\n");
+    printf("Digite \"cpnj <cnpj\" ou \"nome <razão social>\" para buscar uma empresa.\n");
+    printf("Digite \"exit\" para sair.\n");
     printf("\n");
     printf("Exemplos:\n");
     printf("\n");
-    printf("    $ cnpj \"43241060\"\n");
-    printf("    $ nome \"MC DONALDS COMERCIO E PADARIA LTDA\"\n");
+    printf("    $ cnpj 45480688\n");
+    printf("    $ nome CORAL E ORQUESTRA \"CIDADE DE SALTO\"\n");
     printf("\n");
     printf("\n");
 
@@ -75,7 +73,7 @@ int main(int argc, char *argv[])
 
             if (company == NULL)
             {
-                printf("Nenhuma empresa com o CNPJ %s foi encontrada.\n", argument);
+                printf("Nenhuma empresa com o CNPJ \"%s\" foi encontrada.\n", argument);
             }
             else
             {
@@ -88,7 +86,7 @@ int main(int argc, char *argv[])
 
             if (company == NULL)
             {
-                printf("Nenhuma empresa com o nome %s foi encontrada.\n", argument);
+                printf("Nenhuma empresa com o nome \"%s\" foi encontrada.\n", argument);
             }
             else
             {

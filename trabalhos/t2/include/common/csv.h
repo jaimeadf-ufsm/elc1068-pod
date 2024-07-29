@@ -10,13 +10,17 @@ struct csv
 {
     FILE *file;
 
-    char *line;
+    char delimiter;
+    char quote;
 
-    size_t line_capacity;
+    char *line;
+    char *field;
+
     size_t line_position;
+    size_t line_capacity;
 };
 
-CSV csv_open(const char *filename);
+CSV csv_open(const char *filename, char delimiter, char quote);
 void csv_close(CSV *csv);
 
 bool csv_next_record(CSV *csv);
