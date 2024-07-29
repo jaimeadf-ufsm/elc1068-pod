@@ -2,48 +2,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/company.h"
+#include "common/zip.h"
+
+#define ENTRY_FILENAME "data.EMPRECSV"
 
 void compress(char *decompressed_filename, char *compressed_filename)
 {
-    FILE *output = fopen(compressed_filename, "wb");
+    struct zip_t *zip = zip_open(compressed_filename, ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
 
-    Company *head = company_read(decompressed_filename);
-    Company *company = head;
+    zip_entry_open(zip, ENTRY_FILENAME);
+    zip_entry_fwrite(zip, decompressed_filename);
+    zip_entry_close(zip);
 
-    while (company != NULL)
-    {
-        unsigned int cnpj;
-        unsigned int nature;
-        unsigned int qualification;
-        unsigned int capital_integer;
-        unsigned int capital_fraction;
-        unsigned int size;
-
-        sscanf(company->cnpj, "%u", &cnpj);
-        sscanf(company->nature, "%u", &nature);
-        sscanf(company->responsible_qualification, "%u", &qualification);
-        sscanf(company->capital, "%u,%u", &capital_integer, &capital_fraction);
-        sscanf(company->size, "%u", &size);
-
-        fwrite(&cnpj, 4, 1, output);
-        fwrite(company->name, 1, strlen(company->name) + 1, output);
-        fwrite(&nature, 2, 1, output);
-        fwrite(&qualification, 2, 1, output);
-        fwrite(&capital_integer, 4, 1, output);
-        fwrite(&capital_fraction, 1, 1, output);
-        fwrite(&size, 1, 1, output);
-        fwrite(company->responsible_federal_entity, 1, strlen(company->responsible_federal_entity) + 1, output);
-
-        company = company->next;
-    }
-
-    fclose(output);
+    zip_close(zip);
 }
 
 void decompress(char *compressed_filename, char *decompressed_filename)
 {
+    struct zip_t *zip = zip_open(compressed_filename, 0, 'r');
 
+    zip_entry_open(zip, ENTRY_FILENAME);
+    zip_entry_fread(zip, decompressed_filename);
+    zip_entry_close(zip);
+
+    zip_close(zip);
 }
 
 int main(int argc, char *argv[])
