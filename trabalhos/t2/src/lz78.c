@@ -100,7 +100,7 @@ uint32_t ht_search(HT *table, uint32_t parent_index, char child_value)
 {
     size_t index = ht_hash(table, parent_index, child_value);
 
-    while (table->entries[index].child_index && (table->entries[index].parent_index != parent_index ||table->entries[index].child_value != child_value))
+    while (table->entries[index].child_index && (table->entries[index].parent_index != parent_index || table->entries[index].child_value != child_value))
     {
         index = (index + 1) % table->capacity;
     }
