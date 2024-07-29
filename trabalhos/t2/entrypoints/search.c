@@ -110,5 +110,5 @@ int main(int argc, char *argv[])
     index_free(&index_name);
     company_free(companies);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
