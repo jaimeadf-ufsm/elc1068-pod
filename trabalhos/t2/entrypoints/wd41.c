@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("ERRO: a opção \"%s\" inválida.\n", argv[1]);
+        printf("ERRO: a opção \"%s\" não é válida.\n", argv[1]);
         return EXIT_FAILURE;
     }
     
