@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
         if (output_file == NULL)
         {
-            fprintf(stderr, "Error: could not open output file.\n");
+            fprintf(stderr, "ERROR: could not open output file.\n");
             return EXIT_FAILURE;
         }
     }
@@ -73,14 +73,22 @@ int main(int argc, char *argv[])
     for (threshold = threshold_min; threshold <= threshold_max; threshold++)
     {
         fprintf(stderr, "DEBUG: sampling threshold %d...\n", threshold);
-        fprintf(output_file, "%06d", threshold);
 
         int j;
 
         for (j = 0; j < sample_count; j++)
         {
             memcpy(playground, datasets + j * number_count, number_count * sizeof(int));
-            fprintf(output_file, " %lf", measure_quicksert(playground, number_count, threshold));
+            double sample = measure_quicksert(playground, number_count, threshold);
+
+            if (j == 0)
+            {
+                fprintf(output_file, "%lf", sample);
+            }
+            else
+            {
+                fprintf(output_file, ",%lf", sample);
+            }
         }
 
         fprintf(output_file, "\n");

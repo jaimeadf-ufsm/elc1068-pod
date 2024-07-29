@@ -17,11 +17,11 @@ struct heap
 {
     Element *array;
 
-    int size;
-    int capacity;
+    long long size;
+    long long capacity;
 };
 
-Heap create_heap(int capacity);
+Heap create_heap(long long capacity);
 void free_heap(Heap *heap);
 
 Element *peek_heap(Heap *heap);

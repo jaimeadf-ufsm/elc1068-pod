@@ -6,6 +6,7 @@
 #include "common/quicksert.h"
 #include "common/input.h"
 #include "common/stats.h"
+#include "common/mergix.h"
 
 int compare(const void *a, const void *b)
 {
@@ -33,7 +34,7 @@ bool is_sorted(int *array, int *result, long long size)
     memcpy(expected_result, array, size * sizeof(int));
     qsort(expected_result, size, sizeof(int), compare);
 
-    int i;
+    long long i;
 
     for (i = 0; i < size; i++)
     {
@@ -54,7 +55,16 @@ double measure_quicksort(int *array, long long n)
     quicksort(array, n);
     stop_timer(&timer);
 
-    return get_timer_units(&timer); 
+    return get_timer_units(&timer);
+}
+
+double measure_mergesort(int *array, long long n)
+{
+    Timer timer = start_timer();
+    mergesort(array, n);
+    stop_timer(&timer);
+
+    return get_timer_units(&timer);
 }
 
 double measure_quicksert(int *array, long long n, long long threshold)
@@ -66,10 +76,10 @@ double measure_quicksert(int *array, long long n, long long threshold)
     return get_timer_units(&timer);
 }
 
-double measure_mergix(int *array, long long n)
+double measure_mergix(int *array, long long n, long long threshold)
 {
     Timer timer = start_timer();
-    qsort(array, n, sizeof(int), compare);
+    mergix(array, n, threshold);
     stop_timer(&timer);
 
     return get_timer_units(&timer);
@@ -81,13 +91,17 @@ double measure_algorithm(int *playground, long long size, char *algorithm_type, 
     {
         return measure_quicksort(playground, size);
     }
+    else if (strcmp(algorithm_type, "mergesort") == 0)
+    {
+        return measure_mergesort(playground, size);
+    }
     else if (strcmp(algorithm_type, "quicksert") == 0)
     {
         return measure_quicksert(playground, size, parameter);
     }
     else if (strcmp(algorithm_type, "mergix") == 0)
     {
-        return measure_mergix(playground, size);
+        return measure_mergix(playground, size, parameter);
     }
     else
     {
@@ -122,9 +136,9 @@ void generate_descending_sequences(int *sequences, long long sequence_count, lon
     }
 }
 
-void generate_random_sequences(int *sequences, long long sequence_count, long long sequence_size, long long seed)
+void generate_random_sequences(int *sequences, long long sequence_count, long long sequence_size, long long modulo)
 {
-    srand(seed);
+    srand(0);
 
     long long i, j;
 
@@ -132,7 +146,7 @@ void generate_random_sequences(int *sequences, long long sequence_count, long lo
     {
         for (j = 0; j < sequence_size; j++)
         {
-            sequences[i * sequence_size + j] = rand();
+            sequences[i * sequence_size + j] = modulo > 0 ? rand() % modulo : rand();
         }
     }
 }
@@ -160,13 +174,12 @@ void generate_sequences(int *sequences, long long sequence_count, long long sequ
 
 int main(int argc, char *argv[])
 {
-    if (argc < 7)
+    if (argc < 8)
     {
         fprintf(
             stderr,
-            "Usage: %s <minimum_size> <maximum_size> <increment> <sequence_count> <sequence_type:(ascending, descending, random)> <algorithm_type:(quicksort, quicksert, mergix)> <output_filename> [verify] [sequence_parameter] [algorithm_parameter]\n",
-            argv[0]
-        );
+            "Usage: %s <minimum_size> <maximum_size> <increment> <sequence_count> <sequence_type:(ascending, descending, random)> <algorithm_type:(quicksort, mergesort, quicksert, mergix)> <output_filename> [verify] [sequence_parameter] [algorithm_parameter]\n",
+            argv[0]);
 
         return EXIT_FAILURE;
     }
@@ -215,9 +228,8 @@ int main(int argc, char *argv[])
         sequence_type,
         algorithm_type,
         sequence_parameter,
-        algorithm_parameter
-    );
-    
+        algorithm_parameter);
+
     int *sequences = (int *)malloc(maximum_size * sequence_count * sizeof(int));
     int *working_array = (int *)malloc(maximum_size * sizeof(int));
 
@@ -266,8 +278,7 @@ int main(int argc, char *argv[])
             stats.maximum,
             stats.average,
             stats.median,
-            stats.standard_deviation
-        );
+            stats.standard_deviation);
     }
 
     free(sequences);

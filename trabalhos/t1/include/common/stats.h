@@ -12,7 +12,7 @@ struct stats
     double standard_deviation;
 };
 
-Stats compute_stats(double *samples, int n);
+Stats compute_stats(double *samples, long long n);
 double compute_percentange_change(double value, double reference);
 
 #endif

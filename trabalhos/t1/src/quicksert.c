@@ -1,11 +1,11 @@
 #include <stdbool.h>
 
-int quicksort_partition(int *array, int low, int high)
+long long quicksort_partition(int *array, long long low, long long high)
 {
     int pivot = array[(low + high) / 2];
 
-    int i = low - 1;
-    int j = high + 1;
+    long long i = low - 1;
+    long long j = high + 1;
 
     while (true)
     {
@@ -31,37 +31,37 @@ int quicksort_partition(int *array, int low, int high)
     }
 }
 
-void quicksort_recursion(int *array, int low, int high)
+void quicksort_recursion(int *array, long long low, long long high)
 {
     if (low < high)
     {
-        int p = quicksort_partition(array, low, high);
+        long long p = quicksort_partition(array, low, high);
 
         quicksort_recursion(array, low, p);
         quicksort_recursion(array, p + 1, high);
     }
 }
 
-void quicksert_recursion(int *array, int low, int high, int threshold)
+void quicksert_recursion(int *array, long long low, long long high, long long threshold)
 {
-    int n = high - low + 1;
+    long long n = high - low + 1;
 
     if (low < high && n > threshold)
     {
-        int p = quicksort_partition(array, low, high);
+        long long p = quicksort_partition(array, low, high);
 
         quicksert_recursion(array, low, p, threshold);
         quicksert_recursion(array, p + 1, high, threshold);
     }
 }
 
-void insertionsort(int *array, int n)
+void insertionsort(int *array, long long n)
 {
-    int i;
+    long long i;
 
     for (i = 1; i < n; i++)
     {
-        int j = i;
+        long long j = i;
         int temporary = array[i];
 
         while (j > 0 && array[j - 1] > temporary)
@@ -74,12 +74,12 @@ void insertionsort(int *array, int n)
     }
 }
 
-void quicksort(int *array, int n)
+void quicksort(int *array, long long n)
 {
     quicksort_recursion(array, 0, n - 1);
 }
 
-void quicksert(int *array, int n, int threshold)
+void quicksert(int *array, long long n, long long threshold)
 {
     quicksert_recursion(array, 0, n - 1, threshold);
     insertionsort(array, n);

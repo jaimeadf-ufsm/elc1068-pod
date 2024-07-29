@@ -1,7 +1,7 @@
 #ifndef EXTERNAL_SORT_H
 #define EXTERNAL_SORT_H
 
-typedef void (*SortFunction)(int *, int);
+typedef void (*SortFunction)(int *, long long);
 typedef struct sort_options SortOptions;
 
 struct sort_options
@@ -10,9 +10,9 @@ struct sort_options
     char *input_filename;
     char *output_filename;
     char *tmp_directory;
-    int run_count;
-    int run_size;
-    int buffer_size;
+    long long run_count;
+    long long run_size;
+    long long buffer_size;
 };
 
 

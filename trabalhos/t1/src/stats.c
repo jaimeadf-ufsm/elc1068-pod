@@ -21,7 +21,7 @@ int compare_samples(const void *a, const void *b)
     return 0;
 }
 
-Stats compute_stats(double *samples, int n)
+Stats compute_stats(double *samples, long long n)
 {
     Stats stats;
     stats.minimum = HUGE_VAL;
@@ -40,7 +40,7 @@ Stats compute_stats(double *samples, int n)
     stats.minimum = samples[0];
     stats.maximum = samples[n - 1];
 
-    int i;
+    long long i;
 
     for (i = 0; i < n; i++)
     {

@@ -10,26 +10,27 @@
 #define DEFAULT_BUFFER_SIZE 64 * 1024
 #define DEFAULT_TMP_DIR "tmp"
 
-#define QUICKSERT_THRESHOLD 100
+#define QUICKSERT_THRESHOLD 23
+#define MERGIX_THRESHOLD 97
 
-void sort_with_quicksort(int *array, int size)
+void sort_with_quicksort(int *array, long long size)
 {
     quicksort(array, size);
 }
 
-void sort_with_quicksert(int *array, int size)
+void sort_with_mergesort(int *array, long long size)
+{
+    mergesort(array, size);
+}
+
+void sort_with_quicksert(int *array, long long size)
 {
     quicksert(array, size, QUICKSERT_THRESHOLD);
 }
 
-void sort_with_mergix(int *array, int size)
+void sort_with_mergix(int *array, long long size)
 {
-    mergix(array, 0, size - 1);
-}
-
-void sort_with_mergesort(int *array, int size)
-{
-    mergesort(array, 0, size - 1);
+    mergix(array, size, MERGIX_THRESHOLD);
 }
 
 SortFunction resolve_algorithm(char *argument)
@@ -38,6 +39,10 @@ SortFunction resolve_algorithm(char *argument)
     {
         return sort_with_quicksort;
     }
+    else if (strcmp(argument, "mergesort") == 0)
+    {
+        return sort_with_mergesort;
+    }
     else if (strcmp(argument, "quicksert") == 0)
     {
         return sort_with_quicksert;
@@ -45,10 +50,6 @@ SortFunction resolve_algorithm(char *argument)
     else if (strcmp(argument, "mergix") == 0)
     {
         return sort_with_mergix;
-    }
-    else if (strcmp(argument, "mergesort") == 0)
-    {
-        return sort_with_mergesort;
     }
     else
     {
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
 {
     if (argc < 6)
     {
-        printf("Usage: %s <input_filename> <output_filename> <run_count> <run_size> <algorithm:(quicksort, quicksert, mergix, mergesort)> [temporary_directory] [buffer_size]\n", argv[0]);
+        printf("Usage: %s <input_filename> <output_filename> <run_count> <run_size> <algorithm:(quicksort, mergesort, quicksert, mergix)> [temporary_directory] [buffer_size]\n", argv[0]);
         return EXIT_FAILURE;
     }
 

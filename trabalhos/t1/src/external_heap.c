@@ -9,9 +9,9 @@
 #define HEAP_RIGHT(i) 2 * i + 2
 #define HEAP_PARENT(i) (i - 1) / 2
 
-void heapify_up(Heap *heap, int i)
+void heapify_up(Heap *heap, long long i)
 {
-    int parent = HEAP_PARENT(i);
+    long long parent = HEAP_PARENT(i);
 
     while (i != 0 && heap->array[parent].value > heap->array[i].value)
     {
@@ -23,14 +23,14 @@ void heapify_up(Heap *heap, int i)
 
 void heapify_down(Heap *heap)
 {
-    int i = 0;
+    long long i = 0;
 
     while (true)
     {
-        int l = HEAP_LEFT(i);
-        int r = HEAP_RIGHT(i);
+        long long l = HEAP_LEFT(i);
+        long long r = HEAP_RIGHT(i);
 
-        int smallest = i;
+        long long smallest = i;
 
         if (l < heap->size && heap->array[l].value < heap->array[smallest].value)
         {
@@ -51,7 +51,7 @@ void heapify_down(Heap *heap)
     }
 }
 
-Heap create_heap(int capacity)
+Heap create_heap(long long capacity)
 {
     Heap heap;
     heap.array = (Element *)malloc(sizeof(Element) * capacity);

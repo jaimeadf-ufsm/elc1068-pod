@@ -10,20 +10,20 @@ struct buffered_reader
 {
     FILE *file;
     char *buffer;
-    int index;
-    int size;
-    int capacity;
+    long long index;
+    long long size;
+    long long capacity;
 };
 
 struct buffered_writer
 {
     FILE *file;
     char *buffer;
-    int size;
-    int capacity;
+    long long size;
+    long long capacity;
 };
 
-BufferedReader open_reader(char *filename, int capacity);
+BufferedReader open_reader(char *filename, long long capacity);
 void close_reader(BufferedReader *reader);
 
 int read_number(BufferedReader *reader);
@@ -31,7 +31,7 @@ char read_char(BufferedReader *reader);
 
 bool has_reader_ended(BufferedReader *reader);
 
-BufferedWriter open_writer(char *filename, int capacity);
+BufferedWriter open_writer(char *filename, long long capacity);
 void flush_writer(BufferedWriter *writer);
 void close_writer(BufferedWriter *writer);
 
