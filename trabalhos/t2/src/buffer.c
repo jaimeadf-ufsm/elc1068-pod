@@ -4,12 +4,12 @@
 
 #include "common/buffer.h"
 
-#define BUFFER_INITIAL_CAPACITY 4 * 1024
+#define INITIAL_CAPACITY 4 * 1024
 
 Buffer buffer_create()
 {
     Buffer buffer;
-    buffer.capacity = BUFFER_INITIAL_CAPACITY;
+    buffer.capacity = INITIAL_CAPACITY;
     buffer.size = 0;
     buffer.data = (char *)malloc(buffer.capacity);
 

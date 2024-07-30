@@ -3,6 +3,7 @@
 
 #include "common/company.h"
 #include "common/csv.h"
+#include "common/string_utils.h"
 
 Company *company_read(const char *filename)
 {
@@ -15,13 +16,13 @@ Company *company_read(const char *filename)
     {
         Company *company = (Company *)malloc(sizeof(Company));
 
-        company->cnpj = strdup(csv_next_field(&csv));
-        company->name = strdup(csv_next_field(&csv));
-        company->nature = strdup(csv_next_field(&csv));
-        company->responsible_qualification = strdup(csv_next_field(&csv));
-        company->capital = strdup(csv_next_field(&csv));
-        company->size = strdup(csv_next_field(&csv));
-        company->responsible_federal_entity = strdup(csv_next_field(&csv));
+        company->cnpj = strclone(csv_next_field(&csv));
+        company->name = strclone(csv_next_field(&csv));
+        company->nature = strclone(csv_next_field(&csv));
+        company->responsible_qualification = strclone(csv_next_field(&csv));
+        company->capital = strclone(csv_next_field(&csv));
+        company->size = strclone(csv_next_field(&csv));
+        company->responsible_federal_entity = strclone(csv_next_field(&csv));
         
         company->next = NULL;
         

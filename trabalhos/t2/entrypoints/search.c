@@ -5,15 +5,17 @@
 
 #include "common/company.h"
 #include "common/index.h"
+#include "common/string_utils.h"
+#include "common/io_utils.h"
 
 char *make_cnpj_key(const Company *company)
 {
-    return strdup(company->cnpj);
+    return strclone(company->cnpj);
 }
 
 char *make_name_key(const Company *company)
 {
-    return strdup(company->name);
+    return strclone(company->name);
 }
 
 int main(int argc, char *argv[])
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
     while (true)
     {
         printf("$ ");
-        getline(&line, &line_capacity, stdin);
+        readline(&line, &line_capacity, stdin);
 
         line[strlen(line) - 1] = '\0';
 

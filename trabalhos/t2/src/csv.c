@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "common/csv.h"
+#include "common/io_utils.h"
 
 CSV csv_open(const char *filename, char delimiter, char quote)
 {
@@ -36,7 +37,7 @@ void csv_close(CSV *csv)
 
 bool csv_next_record(CSV *csv)
 {
-    if (getline(&csv->line, &csv->line_capacity, csv->file) == -1)
+    if (readline(&csv->line, &csv->line_capacity, csv->file) == -1)
     {
         return false;
     }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 #include <limits.h>
 
 #include "common/lz78.h"
@@ -156,7 +157,6 @@ void lz78_decompress(Buffer *input_buffer, Buffer *output_buffer)
 
     size_t position = 0;
     Buffer temporary_buffer = buffer_create();
-
 
     while (position < input_buffer->size)
     {
