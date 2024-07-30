@@ -4,7 +4,8 @@
 
 #include "common/lz78.h"
 
-#define MAXIMUM_DICT_SIZE (0xFFFFFF)
+#define DICT_SIZE (0xFFFFFF)
+#define HT_CAPACITY (33554467)
 
 #define KB_BYTES (1024)
 #define MB_BYTES (1024 * KB_BYTES)
@@ -12,14 +13,6 @@
 typedef struct compressor_entry CompressorEntry;
 typedef struct decompressor_entry DecompressorEntry;
 typedef struct ht HT;
-
-void mark_progress(size_t position, size_t total)
-{
-    if (position % MB_BYTES == 0)
-    {
-        fprintf(stderr, "DEBUG: [LZ78] %zuMB/%zuMB concluído.\n", position / MB_BYTES, total / MB_BYTES);
-    }
-}
 
 struct compressor_entry
 {
@@ -41,6 +34,14 @@ struct ht
     CompressorEntry *entries;
 };
 
+void mark_progress(size_t position, size_t total)
+{
+    if (position % MB_BYTES == 0)
+    {
+        fprintf(stderr, "DEBUG: [LZ78] %zuMB/%zuMB concluído.\n", position / MB_BYTES, total / MB_BYTES);
+    }
+}
+
 HT ht_create(size_t capacity)
 {
     HT table;
@@ -56,36 +57,9 @@ void ht_free(HT *table)
     free(table->entries);
 }
 
-/* Jenkins hash function */
 size_t ht_hash(HT *table, uint32_t parent_index, char child_value)
 {
-    size_t hash = 0;
-
-    hash += parent_index & 0xFF;
-    hash += hash << 10;
-    hash ^= hash >> 6;
-
-    hash += (parent_index >> 8) & 0xFF;
-    hash += hash << 10;
-    hash ^= hash >> 6;
-
-    hash += (parent_index >> 16) & 0xFF;
-    hash += hash << 10;
-    hash ^= hash >> 6;
-
-    hash += (parent_index >> 24) & 0xFF;
-    hash += hash << 10;
-    hash ^= hash >> 6;
-
-    hash += child_value & 0xFF;
-    hash += hash << 10;
-    hash ^= hash >> 6;
-
-    hash += hash << 3;
-    hash ^= hash >> 11;
-    hash += hash << 15;
-    
-    return hash % table->capacity;
+    return (parent_index * 31 + (unsigned char)child_value) % table->capacity;
 }
 
 void ht_insert(HT *table, uint32_t parent_index, uint32_t child_index, char child_value)
@@ -133,7 +107,7 @@ void ht_reset(HT *table)
 
 void lz78_compress(Buffer *input_buffer, Buffer *output_buffer)
 {
-    HT table = ht_create(2 * MAXIMUM_DICT_SIZE);
+    HT table = ht_create(HT_CAPACITY);
 
     size_t position = 0;
 
@@ -161,7 +135,7 @@ void lz78_compress(Buffer *input_buffer, Buffer *output_buffer)
 
         buffer_write_char(output_buffer, symbol);
 
-        if (table.size == MAXIMUM_DICT_SIZE)
+        if (table.size == DICT_SIZE)
         {
             fprintf(stderr, "DEBUG: [LZ78] dicionário limpo.\n");
             ht_reset(&table);
@@ -177,7 +151,7 @@ void lz78_compress(Buffer *input_buffer, Buffer *output_buffer)
 
 void lz78_decompress(Buffer *input_buffer, Buffer *output_buffer)
 {
-    DecompressorEntry *table = (DecompressorEntry *)calloc(sizeof(DecompressorEntry), MAXIMUM_DICT_SIZE);
+    DecompressorEntry *table = (DecompressorEntry *)calloc(sizeof(DecompressorEntry), DICT_SIZE);
     size_t table_size = 1;
 
     size_t position = 0;
@@ -212,7 +186,7 @@ void lz78_decompress(Buffer *input_buffer, Buffer *output_buffer)
 
         buffer_clear(&temporary_buffer);
 
-        if (table_size == MAXIMUM_DICT_SIZE)
+        if (table_size == DICT_SIZE)
         {
             fprintf(stderr, "DEBUG: [LZ78] dicionário limpo\n");
             table_size = 1;
