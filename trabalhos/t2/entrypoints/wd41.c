@@ -4,71 +4,28 @@
 
 #include "common/lz78.h"
 
-#define CHUNK_SIZE 4096
-
-Buffer read_file_to_buffer(char *filename)
-{
-    Buffer buffer = buffer_create();
-
-    FILE *file = fopen(filename, "rb");
-
-    if (file == NULL)
-    {
-        fprintf(stderr, "ERRO: não foi possível abrir o arquivo \"%s\" para leitura.\n", filename);
-        exit(EXIT_FAILURE);
-    }
-
-    char chunk[CHUNK_SIZE];
-    size_t bytes;
-
-    while ((bytes = fread(chunk, 1, sizeof(chunk), file)) > 0)
-    {
-        buffer_write_array(&buffer, chunk, bytes);
-    }
-
-    fclose(file);
-
-    return buffer;
-}
-
-void write_buffer_to_file(Buffer *buffer, char *filename)
-{
-    FILE *file = fopen(filename, "wb");
-
-    if (file == NULL)
-    {
-        fprintf(stderr, "ERRO: não foi possível abrir o arquivo \"%s\" para escrita.\n", filename);
-        exit(EXIT_FAILURE);
-    }
-
-    fwrite(buffer_data(buffer), 1, buffer_size(buffer), file);
-    fclose(file);
-}
+#define BUFFER_SIZE (4096)
 
 void compress(char *decompressed_filename, char *compressed_filename)
 {
-    Buffer input_buffer = read_file_to_buffer(decompressed_filename);
-    Buffer output_buffer = buffer_create();
+    BufferedReader input = reader_open(decompressed_filename, BUFFER_SIZE);
+    BufferedWriter output = writer_open(compressed_filename, BUFFER_SIZE);
 
-    lz78_compress(&input_buffer, &output_buffer);
+    lz78_compress(&input, &output);
 
-    write_buffer_to_file(&output_buffer, compressed_filename);
-
-    buffer_free(&input_buffer);
-    buffer_free(&output_buffer);
+    reader_close(&input);
+    writer_close(&output);
 }
 
 void decompress(char *compressed_filename, char *decompressed_filename)
 {
-    Buffer input_buffer = read_file_to_buffer(compressed_filename);
-    Buffer output_buffer = buffer_create();
+    BufferedReader input = reader_open(compressed_filename, BUFFER_SIZE);
+    BufferedWriter output = writer_open(decompressed_filename, BUFFER_SIZE);
 
-    lz78_decompress(&input_buffer, &output_buffer);
+    lz78_decompress(&input, &output);
 
-    write_buffer_to_file(&output_buffer, decompressed_filename);
-
-    buffer_free(&input_buffer);
-    buffer_free(&output_buffer);
+    reader_close(&input);
+    writer_close(&output);
 }
 
 int main(int argc, char *argv[])

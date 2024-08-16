@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
 #include <limits.h>
 
 #include "common/lz78.h"
 
 #define DICT_SIZE (0xFFFFFF)
 #define HT_CAPACITY (33554467)
+#define TEMPORARY_CAPACITY (64)
 
 #define KB_BYTES (1024)
 #define MB_BYTES (1024 * KB_BYTES)
@@ -35,11 +35,11 @@ struct ht
     CompressorEntry *entries;
 };
 
-void mark_progress(size_t position, size_t total)
+void mark_progress(size_t position)
 {
     if (position % MB_BYTES == 0)
     {
-        fprintf(stderr, "DEBUG: [LZ78] %zuMB/%zuMB concluído.\n", position / MB_BYTES, total / MB_BYTES);
+        fprintf(stderr, "DEBUG: [LZ78] %zuMB concluído.\n", position / MB_BYTES);
     }
 }
 
@@ -106,35 +106,37 @@ void ht_reset(HT *table)
     }
 }
 
-void lz78_compress(Buffer *input_buffer, Buffer *output_buffer)
+void lz78_compress(BufferedReader *input, BufferedWriter *output)
 {
     HT table = ht_create(HT_CAPACITY);
 
     size_t position = 0;
 
-    while (position < input_buffer->size)
+    while (!reader_is_empty(input))
     {
+        size_t byte_shift;
+
         uint32_t parent_index = 0;
         uint32_t search_index = 0;
 
-        size_t byte_shift;
+        char symbol;
 
         do
         {
+            symbol = reader_read_char(input);
+
             parent_index = search_index;
-            search_index = ht_search(&table, parent_index, input_buffer->data[position++]);
+            search_index = ht_search(&table, parent_index, symbol);
 
-            mark_progress(position, input_buffer->size);
-        } while (search_index && position < input_buffer->size);
-
-        char symbol = input_buffer->data[position - 1];
+            mark_progress(position++);
+        } while (search_index && !reader_is_empty(input));
 
         for (byte_shift = 0; table.size >> byte_shift; byte_shift += 8)
         {
-            buffer_write_char(output_buffer, (parent_index >> byte_shift) & 0xFF);
+            writer_write_char(output, (parent_index >> byte_shift) & 0xFF);
         }
 
-        buffer_write_char(output_buffer, symbol);
+        writer_write_char(output, symbol);
 
         if (table.size == DICT_SIZE)
         {
@@ -150,41 +152,50 @@ void lz78_compress(Buffer *input_buffer, Buffer *output_buffer)
     ht_free(&table);
 }
 
-void lz78_decompress(Buffer *input_buffer, Buffer *output_buffer)
+void lz78_decompress(BufferedReader *input, BufferedWriter *output)
 {
-    DecompressorEntry *table = (DecompressorEntry *)calloc(sizeof(DecompressorEntry), DICT_SIZE);
     size_t table_size = 1;
+    DecompressorEntry *table_array = (DecompressorEntry *)calloc(sizeof(DecompressorEntry), DICT_SIZE);
+
+    size_t temporary_size = 0;
+    size_t temporary_capacity = 0;
+    char *temporary_array = (char *)malloc(sizeof(char) * TEMPORARY_CAPACITY);
 
     size_t position = 0;
-    Buffer temporary_buffer = buffer_create();
 
-    while (position < input_buffer->size)
+    while (!reader_is_empty(input))
     {
         uint32_t parent_index = 0;
-        uint32_t search_index;
+        uint32_t search_index = 0;
 
         size_t byte_shift;
 
         for (byte_shift = 0; table_size >> byte_shift; byte_shift += 8)
         {
-            parent_index |= (input_buffer->data[position++] & 0xFF) << byte_shift;
-            mark_progress(position, input_buffer->size);
+            parent_index |= (reader_read_char(input) & 0xFF) << byte_shift;
+            mark_progress(position++);
         }
 
-        char symbol = input_buffer->data[position++];
+        char symbol = reader_read_char(input);
 
-        mark_progress(position, input_buffer->size);
-        buffer_write_char(&temporary_buffer, symbol);
+        temporary_array[temporary_size++] = symbol;
+        mark_progress(position++);
 
-        for (search_index = parent_index; search_index; search_index = table[search_index].parent_index)
+        for (search_index = parent_index; search_index; search_index = table_array[search_index].parent_index)
         {
-            buffer_write_char(&temporary_buffer, table[search_index].child_value);
+            temporary_array[temporary_size++] = table_array[search_index].child_value;
+
+            if (temporary_size == temporary_capacity)
+            {
+                temporary_capacity = 2 * temporary_capacity;
+                temporary_array = (char *)realloc(temporary_array, sizeof(char) * temporary_capacity);
+            }
         }
 
-        buffer_reverse(&temporary_buffer);
-        buffer_write_array(output_buffer, buffer_data(&temporary_buffer), buffer_size(&temporary_buffer));
-
-        buffer_clear(&temporary_buffer);
+        while (temporary_size)
+        {
+            writer_write_char(output, temporary_array[--temporary_size]);
+        }
 
         if (table_size == DICT_SIZE)
         {
@@ -193,12 +204,13 @@ void lz78_decompress(Buffer *input_buffer, Buffer *output_buffer)
         }
         else
         {
-            table[table_size].parent_index = parent_index;
-            table[table_size].child_value = symbol;
+            table_array[table_size].parent_index = parent_index;
+            table_array[table_size].child_value = symbol;
 
             table_size++;
         }
     }
 
-    free(table);
+    free(table_array);
+    free(temporary_array);
 }
