@@ -159,7 +159,7 @@ void lz78_decompress(BufferedReader *input, BufferedWriter *output)
 
     size_t temporary_size = 0;
     size_t temporary_capacity = 0;
-    char *temporary_array = (char *)malloc(sizeof(char) * TEMPORARY_CAPACITY);
+    char *temporary_array = (char *)malloc(TEMPORARY_CAPACITY * sizeof(char));
 
     size_t position = 0;
 

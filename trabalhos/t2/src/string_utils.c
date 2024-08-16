@@ -5,7 +5,7 @@
 
 char *strclone(const char *src)
 {
-    char *dest = (char *)malloc(strlen(src) + 1);
+    char *dest = (char *)malloc((strlen(src) + 1) * sizeof(char));
 
     if (dest == NULL)
     {
