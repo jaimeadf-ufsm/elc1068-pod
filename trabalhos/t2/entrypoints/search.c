@@ -71,6 +71,11 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(command, "cnpj") == 0)
         {
+            if (argument == NULL)
+            {
+                printf("Por favor, forneça um CNPJ.\n");
+                continue;
+            }
             Company *company = index_search(&index_cnpj, argument);
 
             if (company == NULL)
