@@ -57,7 +57,7 @@ Substitua <dados_comprimidos.wd41> pelo arquivo compactado e <dados_descomprimid
 
 ## Taxa de compressão obtida
 
-No experimento realizado com o arquivo <Empresas0.EMPRECSV>, que inicialmente possuía 1.352.694 KB, aplicamos a compressão utilizando nosso algoritmo baseado no método LZ78. Após a compressão, o tamanho do arquivo foi reduzido para 349.846 KB, resultando em uma taxa de compressão de aproximadamente 74,15%.
+No experimento realizado com o arquivo <Empresas0.EMPRECSV>, que inicialmente possuía 1.352.694 KB, aplicamos a compressão utilizando nosso algoritmo baseado no método LZ78. Após a compressão, o tamanho do arquivo foi reduzido para 349.846 KB, resultando em uma taxa de compressão de aproximadamente 25,26%.
 
 ### Comparação com o Formato .zip
 
