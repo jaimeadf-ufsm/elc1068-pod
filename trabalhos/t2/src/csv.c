@@ -7,7 +7,7 @@
 
 void csv_field_append(CSV *csv, char c)
 {
-    if (csv->field_length + 1 >= csv->field_capacity)
+    if (csv->field_length + 1 > csv->field_capacity)
     {
         csv->field_capacity *= 2;
         csv->field_array = (char *)realloc(csv->field_array, csv->field_capacity * sizeof(char));
