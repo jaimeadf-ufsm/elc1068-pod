@@ -31,7 +31,7 @@ CSV csv_open(const char *filename, char delimiter, char quote)
     
     csv.field_length = 0;
     csv.field_capacity = FIELD_CAPACITY;
-    csv.field_array = (char *)malloc(FIELD_CAPACITY * sizeof(char));
+    csv.field_array = (char *)malloc(csv.field_capacity * sizeof(char));
 
     csv.end_of_record = true;
 
