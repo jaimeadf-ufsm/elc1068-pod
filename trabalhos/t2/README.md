@@ -1,6 +1,5 @@
 # Projeto de Compressão e Busca em Arquivos
 
-
 Este projeto implementa duas funcionalidades principais:
 
 1. Busca Binária: Implementação da busca binária para localizar registros nos arquivos, ordenando-os pelo CNPJ e nome.
@@ -13,8 +12,12 @@ Este projeto implementa duas funcionalidades principais:
 Clone o repositório:
 
 ```bash
-git clone https://github.com/lgtozevich-ufsm/elc1068-pod
+git clone https://github.com/jaimeadf-ufsm/elc1068-pod
+```
 
+E navegue para o diretório do trabalho:
+
+```bash
 cd trabalhos/t2
 ```
 
@@ -25,6 +28,7 @@ Para compilar o projeto, execute o seguinte comando:
 make all
 
 ```
+
 
 ## Instruções de Uso
 
@@ -54,6 +58,7 @@ Para executar a descompressão:
 ```
 
 Substitua <dados_comprimidos.wd41> pelo arquivo compactado e <dados_descomprimidos.EMPRECSV> pelo arquivo descompactado de saída.
+
 
 ## Resultados
 
