@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <inttypes.h>
 
 #include "common/lz78.h"
 
@@ -48,7 +48,7 @@ HT ht_create(size_t capacity)
     HT table;
     table.capacity = capacity;
     table.size = 1;
-    table.entries = (CompressorEntry *)calloc(sizeof(CompressorEntry), capacity);
+    table.entries = (CompressorEntry *)calloc(capacity, sizeof(CompressorEntry));
 
     return table;
 }
@@ -155,11 +155,11 @@ void lz78_compress(BufferedReader *input, BufferedWriter *output)
 void lz78_decompress(BufferedReader *input, BufferedWriter *output)
 {
     size_t table_size = 1;
-    DecompressorEntry *table_array = (DecompressorEntry *)calloc(sizeof(DecompressorEntry), DICT_SIZE);
+    DecompressorEntry *table_array = (DecompressorEntry *)calloc(DICT_SIZE, sizeof(DecompressorEntry));
 
     size_t temporary_size = 0;
     size_t temporary_capacity = 0;
-    char *temporary_array = (char *)malloc(TEMPORARY_CAPACITY * sizeof(char));
+    char *temporary_array = (char *)malloc(sizeof(char));
 
     size_t position = 0;
 
