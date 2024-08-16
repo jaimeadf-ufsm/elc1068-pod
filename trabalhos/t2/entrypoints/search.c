@@ -10,12 +10,12 @@
 
 char *make_cnpj_key(const Company *company)
 {
-    return strclone(company->cnpj);
+    return company->cnpj;
 }
 
 char *make_name_key(const Company *company)
 {
-    return strclone(company->name);
+    return company->name;
 }
 
 int main(int argc, char *argv[])
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     Index index_name = index_create(companies, make_name_key);
 
     printf("\n");
-    printf("Digite \"cpnj <cnpj\" ou \"nome <razão social>\" para buscar uma empresa.\n");
+    printf("Digite \"cpnj <cnpj>\" ou \"nome <razão social>\" para buscar uma empresa.\n");
     printf("Digite \"exit\" para sair.\n");
     printf("\n");
     printf("Exemplos:\n");
@@ -74,30 +74,39 @@ int main(int argc, char *argv[])
             if (argument == NULL)
             {
                 printf("Por favor, forneça um CNPJ.\n");
-                continue;
-            }
-            Company *company = index_search(&index_cnpj, argument);
-
-            if (company == NULL)
-            {
-                printf("Nenhuma empresa com o CNPJ \"%s\" foi encontrada.\n", argument);
             }
             else
             {
-                company_print(company);
+                Company *company = index_search(&index_cnpj, argument);
+
+                if (company == NULL)
+                {
+                    printf("Nenhuma empresa com o CNPJ \"%s\" foi encontrada.\n", argument);
+                }
+                else
+                {
+                    company_print(company);
+                }
             }
         }
         else if (strcmp(command, "nome") == 0)
         {
-            Company *company = index_search(&index_name, argument);
-
-            if (company == NULL)
+            if (argument == NULL)
             {
-                printf("Nenhuma empresa com o nome \"%s\" foi encontrada.\n", argument);
+                printf("Por favor, forneça um nome.\n");
             }
             else
             {
-                company_print(company);
+                Company *company = index_search(&index_name, argument);
+
+                if (company == NULL)
+                {
+                    printf("Nenhuma empresa com o nome \"%s\" foi encontrada.\n", argument);
+                }
+                else
+                {
+                    company_print(company);
+                }
             }
         }
         else

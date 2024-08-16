@@ -4,12 +4,10 @@
 
 #include "common/lz78.h"
 
-#define BUFFER_SIZE (4096)
-
 void compress(char *decompressed_filename, char *compressed_filename)
 {
-    BufferedReader input = reader_open(decompressed_filename, BUFFER_SIZE);
-    BufferedWriter output = writer_open(compressed_filename, BUFFER_SIZE);
+    BufferedReader input = reader_open(decompressed_filename, DEFAULT_IO_BUFFER_CAPACITY);
+    BufferedWriter output = writer_open(compressed_filename, DEFAULT_IO_BUFFER_CAPACITY);
 
     lz78_compress(&input, &output);
 
@@ -19,8 +17,8 @@ void compress(char *decompressed_filename, char *compressed_filename)
 
 void decompress(char *compressed_filename, char *decompressed_filename)
 {
-    BufferedReader input = reader_open(compressed_filename, BUFFER_SIZE);
-    BufferedWriter output = writer_open(decompressed_filename, BUFFER_SIZE);
+    BufferedReader input = reader_open(compressed_filename, DEFAULT_IO_BUFFER_CAPACITY);
+    BufferedWriter output = writer_open(decompressed_filename, DEFAULT_IO_BUFFER_CAPACITY);
 
     lz78_decompress(&input, &output);
 

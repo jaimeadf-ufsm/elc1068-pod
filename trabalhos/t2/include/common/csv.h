@@ -4,20 +4,22 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "buffered_io.h"
+
 typedef struct csv CSV;
 
 struct csv
 {
-    FILE *file;
+    BufferedReader reader;
 
     char delimiter;
     char quote;
 
-    char *line;
-    char *field;
+    size_t field_length;
+    size_t field_capacity;
+    char *field_array;
 
-    size_t line_position;
-    size_t line_capacity;
+    bool end_of_record;
 };
 
 CSV csv_open(const char *filename, char delimiter, char quote);

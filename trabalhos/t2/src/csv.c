@@ -3,114 +3,112 @@
 #include "common/csv.h"
 #include "common/io_utils.h"
 
+#define FIELD_CAPACITY 256
+
+void csv_field_append(CSV *csv, char c)
+{
+    if (csv->field_length + 1 >= csv->field_capacity)
+    {
+        csv->field_capacity *= 2;
+        csv->field_array = (char *)realloc(csv->field_array, csv->field_capacity);
+    }
+
+    csv->field_array[csv->field_length++] = c;
+}
+
+void csv_field_clear(CSV *csv)
+{
+    csv->field_length = 0;
+}
+
 CSV csv_open(const char *filename, char delimiter, char quote)
 {
     CSV csv;
-    csv.file = fopen(filename, "r");
-
-    if (csv.file == NULL)
-    {
-        fprintf(stderr, "ERRO: não foi possível abrir o arquivo \"%s\".\n", filename);
-        exit(EXIT_FAILURE);
-    }
-    
-    csv.line = NULL;
-    csv.field = NULL;
+    csv.reader = reader_open(filename, DEFAULT_IO_BUFFER_CAPACITY);
 
     csv.delimiter = delimiter;
     csv.quote = quote;
+    
+    csv.field_length = 0;
+    csv.field_capacity = FIELD_CAPACITY;
+    csv.field_array = (char *)malloc(sizeof(char) * FIELD_CAPACITY);
 
-    csv.line_capacity = 0;
+    csv.end_of_record = true;
 
     return csv;
 }
 
 void csv_close(CSV *csv)
 {
-    fclose(csv->file);
- 
-    if (csv->line != NULL)
-    {
-        free(csv->line);
-    }
+    reader_close(&csv->reader);
+    free(csv->field_array);
 }
 
 bool csv_next_record(CSV *csv)
 {
-    if (readline(&csv->line, &csv->line_capacity, csv->file) == -1)
-    {
-        return false;
-    }
+    while (csv_next_field(csv) != NULL);
+    csv->end_of_record = false;
 
-    csv->line_position = 0;
-    csv->field = realloc(csv->field, csv->line_capacity);
-
-    return true;
+    return !reader_is_end_of_file(&csv->reader);
 }
 
 char *csv_next_field(CSV *csv)
 {
-    if (csv->line == NULL)
+    if (csv->end_of_record)
     {
         return NULL;
     }
 
-    if (csv->line[csv->line_position] == '\0')
-    {
-        return NULL;
-    }
+    csv_field_clear(csv);
 
-    size_t field_position = 0;
     bool quoted = false;
+    char c = reader_read_char(&csv->reader);
 
     while (true)
     {
         if (quoted)
         {
-            if (csv->line[csv->line_position] == csv->quote)
+            if (c == csv->quote)
             {
-                csv->line_position++;
+                c = reader_read_char(&csv->reader);
 
-                if (csv->line[csv->line_position] == csv->quote)
-                {
-                    csv->field[field_position++] = csv->quote;
-                    csv->line_position++;
-                }
-                else
+                if (c != csv->quote)
                 {
                     quoted = false;
+                    continue;
                 }
-
-                continue;
             }
 
-            if (csv->line[csv->line_position] == '\0')
-            {
-                printf("ERRO: fim de linha inesperado ao tentar ler campo do CSV: %s.\n", csv->line);
-            }
-
-            csv->field[field_position++] = csv->line[csv->line_position++];
+            csv_field_append(csv, c);
+            c = reader_read_char(&csv->reader);
 
             continue;
         }
 
-        if (csv->line[csv->line_position] == csv->delimiter || csv->line[csv->line_position] == '\n')
+        if (c == csv->delimiter)
         {
-            csv->line_position++;
             break;
         }
 
-        if (csv->line[csv->line_position] == csv->quote)
+        if (c == '\n')
         {
-            quoted = true;
-            csv->line_position++;
-            continue;
+            csv->end_of_record = true;
+            break;
         }
 
-        csv->field[field_position++] = csv->line[csv->line_position++];
+        if (c != csv->quote)
+        {
+            csv_field_append(csv, c);
+        }
+        else
+        {
+            quoted = true;
+        }
+
+        c = reader_read_char(&csv->reader);
     }
 
-    csv->field[field_position] = '\0';
+    csv_field_append(csv, '\0');
 
-    return csv->field;
+    return csv->field_array;
 }

@@ -37,13 +37,6 @@ Index index_create(Company *head, KeyFunction key_function)
 
 void index_free(Index *index)
 {
-    size_t i;
-
-    for (i = 0; i < index->size; i++)
-    {
-        free(index->entries[i].key);
-    }
-
     free(index->entries);
 }
 

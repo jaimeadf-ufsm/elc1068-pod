@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#define DEFAULT_IO_BUFFER_CAPACITY (4096)
+
 typedef struct buffered_reader BufferedReader;
 typedef struct buffered_writer BufferedWriter;
 
@@ -11,28 +13,27 @@ struct buffered_reader
 {
     FILE *file;
     char *buffer;
-    long long index;
-    long long size;
-    long long capacity;
+    size_t index;
+    size_t size;
+    size_t capacity;
 };
 
 struct buffered_writer
 {
     FILE *file;
     char *buffer;
-    long long size;
-    long long capacity;
+    size_t size;
+    size_t capacity;
 };
 
-BufferedReader reader_open(char *filename, long long capacity);
+BufferedReader reader_open(const char *filename, size_t capacity);
 void reader_close(BufferedReader *reader);
 
-int read_number(BufferedReader *reader);
 char reader_read_char(BufferedReader *reader);
 
-bool reader_is_empty(BufferedReader *reader);
+bool reader_is_end_of_file(BufferedReader *reader);
 
-BufferedWriter writer_open(char *filename, long long capacity);
+BufferedWriter writer_open(const char *filename, size_t capacity);
 void writer_flush(BufferedWriter *writer);
 void writer_close(BufferedWriter *writer);
 

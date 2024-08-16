@@ -112,7 +112,7 @@ void lz78_compress(BufferedReader *input, BufferedWriter *output)
 
     size_t position = 0;
 
-    while (!reader_is_empty(input))
+    while (!reader_is_end_of_file(input))
     {
         size_t byte_shift;
 
@@ -129,7 +129,7 @@ void lz78_compress(BufferedReader *input, BufferedWriter *output)
             search_index = ht_search(&table, parent_index, symbol);
 
             mark_progress(position++);
-        } while (search_index && !reader_is_empty(input));
+        } while (search_index && !reader_is_end_of_file(input));
 
         for (byte_shift = 0; table.size >> byte_shift; byte_shift += 8)
         {
@@ -163,7 +163,7 @@ void lz78_decompress(BufferedReader *input, BufferedWriter *output)
 
     size_t position = 0;
 
-    while (!reader_is_empty(input))
+    while (!reader_is_end_of_file(input))
     {
         uint32_t parent_index = 0;
         uint32_t search_index = 0;

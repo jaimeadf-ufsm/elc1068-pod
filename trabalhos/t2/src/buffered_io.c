@@ -9,7 +9,7 @@ void reader_fill_buffer(BufferedReader *reader)
     reader->index = 0;
 }
 
-BufferedReader reader_open(char *filename, long long capacity)
+BufferedReader reader_open(const char *filename, size_t capacity)
 {
     BufferedReader reader;
     reader.file = fopen(filename, "r");
@@ -37,9 +37,9 @@ void reader_close(BufferedReader *reader)
 
 char reader_read_char(BufferedReader *reader)
 {
-    if (reader_is_empty(reader))
+    if (reader_is_end_of_file(reader))
     {
-        fprintf(stderr, "ERROR: unexpected end of file when trying to read character.\n");
+        fprintf(stderr, "ERROR: fim do arquivo inesperado ao tentar ler caractere.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -47,18 +47,18 @@ char reader_read_char(BufferedReader *reader)
 
     if (reader->index == reader->size)
     {
-        fill_reader_buffer(reader);
+        reader_fill_buffer(reader);
     }
 
     return c;
 }
 
-bool reader_is_empty(BufferedReader *reader)
+bool reader_is_end_of_file(BufferedReader *reader)
 {
     return reader->size == 0;
 }
 
-BufferedWriter writer_open(char *filename, long long capacity)
+BufferedWriter writer_open(const char *filename, size_t capacity)
 {
     BufferedWriter writer;
     writer.file = fopen(filename, "w");
