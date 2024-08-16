@@ -5,7 +5,6 @@
 
 #include "common/company.h"
 #include "common/index.h"
-#include "common/string_utils.h"
 #include "common/io_utils.h"
 
 char *make_cnpj_key(const Company *company)
