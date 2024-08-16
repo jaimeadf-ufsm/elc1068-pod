@@ -2,7 +2,7 @@
 
 Este projeto implementa duas funcionalidades principais:
 
-1. Busca Binária: Implementação da busca binária para localizar registros nos arquivos, ordenando-os pelo CNPJ e nome.
+1. Busca Binária: Implementação da busca binária para localizar registros nos arquivos, ordenando-os pelo CNPJ e pelo nome.
 
 2. Compressão de Dados: Utilizamos a compressão LZ78 para compactar os arquivos.
 
