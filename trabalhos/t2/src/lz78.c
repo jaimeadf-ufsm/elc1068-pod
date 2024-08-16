@@ -188,7 +188,7 @@ void lz78_decompress(BufferedReader *input, BufferedWriter *output)
             if (temporary_size == temporary_capacity)
             {
                 temporary_capacity = 2 * temporary_capacity;
-                temporary_array = (char *)realloc(temporary_array, sizeof(char) * temporary_capacity);
+                temporary_array = (char *)realloc(temporary_array, temporary_capacity * sizeof(char));
             }
         }
 
