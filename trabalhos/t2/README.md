@@ -1,4 +1,4 @@
-# Projeto de Compressão e Busca de Arquivos
+# Projeto de Compressão e Busca em Arquivos
 
 
 Este projeto implementa duas funcionalidades principais:
