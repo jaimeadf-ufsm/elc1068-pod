@@ -21,6 +21,7 @@ E navegue para o diretório do trabalho:
 cd trabalhos/t2
 ```
 
+
 ## Compilação
 Para compilar o projeto, execute o seguinte comando:
 
